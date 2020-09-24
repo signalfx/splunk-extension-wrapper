@@ -8,11 +8,11 @@ import (
 	"time"
 )
 
-const invocations = "lambda.extension.function.invocation"
-const sandboxStart = "lambda.extension.environment.initialization"
-const sandboxEnd = "lambda.extension.environment.shutdown"
-const sandboxDuration = "lambda.extension.environment.duration"
-const sandboxActive = "lambda.extension.environment.active"
+const invocations = "lambda.function.invocation"
+const environmentStart = "lambda.function.initialization"
+const environmentShutdown = "lambda.function.shutdown"
+const environmentLifetime = "lambda.function.lifetime"
+const environmentActive = "lambda.function.active"
 
 const dimShutdownCause = "cause"
 const dimFunctionName = "name"
@@ -50,20 +50,20 @@ func (m *metrics) Invoked() {
 }
 
 func (m metrics) startCounter() *datapoint.Datapoint {
-	dp := sfxclient.Counter(sandboxStart, nil, 1)
+	dp := sfxclient.Counter(environmentStart, nil, 1)
 	dp.Timestamp = m.startTime
 	return dp
 }
 
 func (m metrics) endCounter(cause string) *datapoint.Datapoint {
-	dp := sfxclient.Counter(sandboxEnd, map[string]string{dimShutdownCause: cause}, 1)
+	dp := sfxclient.Counter(environmentShutdown, map[string]string{dimShutdownCause: cause}, 1)
 	dp.Timestamp = m.endTime
 	return dp
 }
 
 func (m metrics) envDuration() *datapoint.Datapoint {
 	dur := m.endTime.Sub(m.startTime)
-	dp := sfxclient.Gauge(sandboxDuration, nil, dur.Milliseconds())
+	dp := sfxclient.Gauge(environmentLifetime, nil, dur.Milliseconds())
 	dp.Timestamp = m.endTime
 	return dp
 }
@@ -77,7 +77,7 @@ func (m *metrics) invocationsCounter() *datapoint.Datapoint {
 }
 
 func activeCounter() *datapoint.Datapoint {
-	return sfxclient.Gauge(sandboxActive, nil, 1)
+	return sfxclient.Gauge(environmentActive, nil, 1)
 }
 
 func (m *metrics) Datapoints() []*datapoint.Datapoint {

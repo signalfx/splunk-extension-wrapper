@@ -18,7 +18,7 @@ const minTokenLength = 10 // SFx Access Tokens are 22 chars long in 2019 but acc
 
 const ingestURLEnv = "INGEST"
 const tokenEnv = "TOKEN"
-const reportingDelayEnv = "REPORTING_DELAY"
+const reportingDelayEnv = "REPORTING_RATE"
 const verboseEnv = "VERBOSE"
 
 type Configuration struct {
