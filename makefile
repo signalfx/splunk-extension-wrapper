@@ -6,6 +6,8 @@ PROFILE ?= integrations
 REGION ?= us-east-1
 NAME ?= signalfx-extension-wrapper
 
+VERSION=`git log --format=format:%h -1`
+
 all: clean build package
 
 clean:
@@ -14,8 +16,7 @@ clean:
 
 build:
 	mkdir -p bin/extensions
-	GOOS=linux GOARCH=amd64 $(GOBUILD) -o bin/extensions -ldflags "-s -w" ./cmd/lambda-extension/*.go
-
+	GOOS=linux GOARCH=amd64 $(GOBUILD) -o bin/extensions -ldflags "-s -w -X main.gitVersion=$(VERSION)" ./cmd/signalfx-extension-wrapper/*.go
 
 package:
 	# this "magic" file enables access to Lambda-managed runtimes

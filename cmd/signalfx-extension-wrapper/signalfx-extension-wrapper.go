@@ -11,6 +11,9 @@ import (
 	"path"
 )
 
+// the correct value is set by the go linker (it's done during build using "ldflags")
+var gitVersion string
+
 func main() {
 	initLogging()
 
@@ -66,6 +69,7 @@ func initLogging() {
 	log.SetPrefix("[" + en + "] ")
 	log.SetFlags(log.Lmsgprefix)
 
+	log.Printf("%v, version: %v", extensionName(), gitVersion)
 	configuration := config.New()
 
 	if !configuration.Verbose {

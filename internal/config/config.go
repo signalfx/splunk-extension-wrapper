@@ -51,7 +51,7 @@ func (c Configuration) String() string {
 
 func obfuscatedToken(token string) string {
 	if len(token) < minTokenLength {
-		return "<invalid token> minimum 10 chars required"
+		return fmt.Sprintf("<invalid token> minimum %v chars required", minTokenLength)
 	}
 	return fmt.Sprintf("%s...%s", token[0:2], token[len(token)-2:])
 }
