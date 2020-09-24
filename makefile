@@ -4,7 +4,7 @@ GOCLEAN=$(GOCMD) clean
 
 PROFILE ?= integrations
 REGION ?= us-east-1
-NAME ?= lambda-extension-wrapper
+NAME ?= signalfx-extension-wrapper
 
 all: clean build package
 

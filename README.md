@@ -46,7 +46,7 @@ make
 To publish the zip as a layer:
 
 ```
-make publish PROFILE=integrations REGION=us-east-1 NAME=lambda-extension-wrapper
+make publish PROFILE=integrations REGION=us-east-1 NAME=signalfx-extension-wrapper
 ```
 
 Variables explanation:
