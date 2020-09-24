@@ -18,8 +18,8 @@ const minTokenLength = 10 // SFx Access Tokens are 22 chars long in 2019 but acc
 
 const ingestURLEnv = "INGEST"
 const tokenEnv = "TOKEN"
-const reportingDelay = "REPORTING_DELAY"
-const verbose = "VERBOSE"
+const reportingDelayEnv = "REPORTING_DELAY"
+const verboseEnv = "VERBOSE"
 
 type Configuration struct {
 	IngestURL      string
@@ -32,14 +32,14 @@ func New() Configuration {
 	return Configuration{
 		IngestURL:      strOrDefault(ingestURLEnv, defaultIngestURL),
 		Token:          strOrDefault(tokenEnv, defaultToken),
-		ReportingDelay: durationOrDefault(reportingDelay, defaultReportingDuration),
-		Verbose:        boolOrDefault(verbose, defaultVerbose),
+		ReportingDelay: durationOrDefault(reportingDelayEnv, defaultReportingDuration),
+		Verbose:        boolOrDefault(verboseEnv, defaultVerbose),
 	}
 }
 
 func (c Configuration) String() string {
 	builder := strings.Builder{}
-	addLine := func(format string, a ...interface{}) { builder.WriteString(fmt.Sprintf(format+"\n", a...)) }
+	addLine := func(format string, arg interface{}) { builder.WriteString(fmt.Sprintf(format+"\n", arg)) }
 
 	addLine("Ingest URL      = %v", c.IngestURL)
 	addLine("Token           = %v", obfuscatedToken(c.Token))
@@ -51,7 +51,7 @@ func (c Configuration) String() string {
 
 func obfuscatedToken(token string) string {
 	if len(token) < minTokenLength {
-		return "<invalid token>"
+		return "<invalid token> minimum 10 chars required"
 	}
 	return fmt.Sprintf("%s...%s", token[0:2], token[len(token)-2:])
 }
@@ -59,30 +59,28 @@ func obfuscatedToken(token string) string {
 func strOrDefault(key, d string) string {
 	if v, ok := os.LookupEnv(key); ok {
 		return v
-	} else {
-		return d
 	}
+	return d
 }
 
 func durationOrDefault(key string, d time.Duration) time.Duration {
 	str := strOrDefault(key, "nan")
-	seconds, err := strconv.Atoi(str)
 
-	if err != nil {
-		log.Printf("can't parse number of seconds: %s\n", str)
-		return d
+	if seconds, err := strconv.Atoi(str); err == nil {
+		return time.Second * time.Duration(seconds)
 	}
 
-	return time.Second * time.Duration(seconds)
+	log.Printf("can't parse number of seconds: %s\n", str)
+	return d
 }
 
 func boolOrDefault(key string, d bool) bool {
 	str := strOrDefault(key, "")
-	trueOrFalse, err := strconv.ParseBool(str)
 
-	if err != nil {
-		return d
+	if trueOrFalse, err := strconv.ParseBool(str); err == nil {
+		return trueOrFalse
 	}
 
-	return trueOrFalse
+	log.Printf("can't parse bool: %s\n", str)
+	return d
 }

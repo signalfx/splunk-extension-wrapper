@@ -19,7 +19,7 @@ type registerResponse struct {
 	Handler         string
 }
 
-type NextResponse struct {
+type Event struct {
 	EventType          string
 	DeadlineMs         int64
 	RequestId          string
@@ -77,8 +77,8 @@ func Register(name string) (*RegisteredApi, error) {
 
 	id, has := resp.Header["Lambda-Extension-Identifier"]
 
-	if !has || len(id) > 1 {
-		return nil, fmt.Errorf("Lambda-Extension-Identifier header missing in response")
+	if !has || len(id) != 1 {
+		return nil, fmt.Errorf("Lambda-Extension-Identifier header missing or ambiguous: %v", id)
 	}
 
 	regResponse := &registerResponse{}
@@ -98,7 +98,7 @@ func Register(name string) (*RegisteredApi, error) {
 		registerResponse: *regResponse}, nil
 }
 
-func (api RegisteredApi) Next() (*NextResponse, error) {
+func (api RegisteredApi) NextEvent() (*Event, error) {
 	log.Println("Waiting for event")
 
 	req, err := http.NewRequest(http.MethodGet, endpoints.next, nil)
@@ -129,7 +129,7 @@ func (api RegisteredApi) Next() (*NextResponse, error) {
 		return nil, ApiError("failed to get the next event, API returned: " + resp.Status)
 	}
 
-	nextResp := &NextResponse{}
+	nextResp := &Event{}
 	err = json.Unmarshal(bodyBytes, nextResp)
 	if err != nil {
 		return nil, fmt.Errorf("unknown format of an event")
@@ -140,26 +140,20 @@ func (api RegisteredApi) Next() (*NextResponse, error) {
 	return nextResp, nil
 }
 
-func (next NextResponse) ParseArn() (string, string) {
+func (next Event) AWSUniqueId(functionName string) string {
 	arn, err := arn.Parse(next.InvokedFunctionArn)
 
 	if err != nil {
 		log.Panicf("can't parse ARN: %v\n", next.InvokedFunctionArn)
 	}
 
-	return arn.Region, arn.AccountID
+	return fmt.Sprintf("lambda_%s_%s_%s", functionName, arn.Region, arn.AccountID)
 }
 
-func (next NextResponse) AWSUniqueId(functionName string) string {
-	region, account := next.ParseArn()
-
-	return fmt.Sprintf("lambda_%s_%s_%s", functionName, region, account)
-}
-
-func (next NextResponse) IsShutdown() bool {
+func (next Event) IsShutdown() bool {
 	return next.EventType == shutdown
 }
 
-func (next NextResponse) GetShutdownReason() string {
+func (next Event) GetShutdownReason() string {
 	return next.ShutdownReason
 }

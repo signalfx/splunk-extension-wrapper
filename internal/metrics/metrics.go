@@ -86,7 +86,6 @@ func (m *metrics) Datapoints() []*datapoint.Datapoint {
 		activeCounter(),
 	}
 
-DRAIN:
 	for {
 		select {
 		case dp := <-m.adhocDps:
@@ -94,9 +93,7 @@ DRAIN:
 			dps = append(dps, dp)
 		default:
 			log.Printf("nothing to drain...")
-			break DRAIN
+			return dps
 		}
 	}
-
-	return dps
 }

@@ -5,14 +5,12 @@ import (
 	"github.com/signalfx/golib/v3/sfxclient"
 	"github.com/splunk/lambda-extension/internal/config"
 	"log"
+	"os"
 )
 
 type MetricEmitter struct {
 	config    *config.Configuration
 	scheduler *sfxclient.Scheduler
-
-	started   bool
-	initError chan error
 
 	metrics
 }
@@ -29,8 +27,6 @@ func New() *MetricEmitter {
 		config:    &configuration,
 		scheduler: scheduler,
 
-		initError: make(chan error),
-
 		metrics: newMetrics(),
 	}
 
@@ -41,26 +37,11 @@ func New() *MetricEmitter {
 	return emitter
 }
 
-func (emitter MetricEmitter) AlreadyStarted() bool {
-	return emitter.started
-}
-
 func (emitter *MetricEmitter) StartScheduler() {
-	go func() {
-		log.Printf("going to report once\n")
-		err := emitter.scheduler.ReportOnce(context.Background())
-		log.Printf("datapoints reported once with error: %v\n", err)
-		if err != nil {
-			emitter.initError <- err
-			return
-		}
-		log.Printf("starting scheduler")
-		emitter.scheduler.Schedule(context.Background())
-	}()
-	emitter.started = true
+	go emitter.scheduler.Schedule(context.Background())
 }
 
-func (emitter *MetricEmitter) Dimensions(name, version, id string) {
+func (emitter *MetricEmitter) SetDefaultDimensions(name, version, id string) {
 	emitter.scheduler.DefaultDimensions(map[string]string{
 		dimFunctionName:    name,
 		dimFunctionVersion: version,
@@ -68,17 +49,11 @@ func (emitter *MetricEmitter) Dimensions(name, version, id string) {
 	})
 }
 
-func (emitter *MetricEmitter) Shutdown(reason string) error {
+func (emitter *MetricEmitter) Shutdown(reason string) {
 	emitter.metrics.markEnd(reason)
 
-	return emitter.scheduler.ReportOnce(context.Background())
-}
-
-func (emitter MetricEmitter) InitError() error {
-	select {
-	case err := <-emitter.initError:
-		return err
-	default:
-		return nil
+	if err := emitter.scheduler.ReportOnce(context.Background()); err != nil {
+		log.SetOutput(os.Stderr)
+		log.Printf("failed to shutdown emitter: %v\n", err)
 	}
 }

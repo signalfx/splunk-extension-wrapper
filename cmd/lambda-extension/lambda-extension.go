@@ -16,66 +16,48 @@ func main() {
 
 	ossignal.Watch()
 
-	var apiErr error
-	var initError error
 	var api *extensionapi.RegisteredApi
-	var shutdownReason string
-
 	m := metrics.New()
 
 	defer func() {
-		log.SetOutput(os.Stderr)
-		if r := recover(); r != nil || apiErr != nil {
-			log.Printf("API error %v\n", apiErr)
+		if r := recover(); r != nil {
+			log.SetOutput(os.Stderr)
 			log.Printf("panic condition: %v\n", r)
-			shutdownReason = toReason(apiErr)
 			if api != nil {
-				api.ExitError(shutdownReason)
+				api.ExitError("Internal error")
 			}
+			m.Shutdown("Internal error")
+			os.Exit(1)
 		}
-
-		if initError != nil {
-			log.Printf("init error: %v\n", initError)
-			if api != nil {
-				api.InitError("Fatal")
-			}
-		}
-
-		if err := m.Shutdown(shutdownReason); err != nil {
-			log.Printf("failed to shutdown emitter: %v\n", err)
-		}
-
-		if config.New().Verbose {
-			log.Printf("Exiting...\n")
-		}
-		os.Exit(1)
 	}()
 
-	api, apiErr = extensionapi.Register(extensionName())
+	api, apiErr := extensionapi.Register(extensionName())
 
-	for apiErr == nil {
-		initError = m.InitError()
-		if initError != nil {
-			break
-		}
-
-		var nextResponse *extensionapi.NextResponse
-		nextResponse, apiErr = api.Next()
-		if apiErr != nil {
-			continue
-		}
-
-		if !m.AlreadyStarted() {
-			m.Dimensions(api.FunctionName, api.FunctionVersion, nextResponse.AWSUniqueId(api.FunctionName))
+	if apiErr == nil {
+		event, apiErr := api.NextEvent()
+		if apiErr == nil && !event.IsShutdown() {
+			m.SetDefaultDimensions(api.FunctionName, api.FunctionVersion, event.AWSUniqueId(api.FunctionName))
 			m.StartScheduler()
-		}
 
-		if nextResponse.IsShutdown() {
-			shutdownReason = nextResponse.GetShutdownReason()
-			break
-		}
+			for apiErr == nil && !event.IsShutdown() {
+				m.Invoked()
+				event, apiErr = api.NextEvent()
+			}
 
-		m.Invoked()
+			if event.IsShutdown() {
+				m.Shutdown(event.ShutdownReason)
+			}
+		} else {
+			log.Printf("no events received")
+		}
+	}
+
+	if apiErr != nil {
+		reason := toReason(apiErr)
+		if api != nil {
+			api.ExitError(reason)
+		}
+		m.Shutdown(reason)
 	}
 }
 
@@ -98,10 +80,8 @@ func extensionName() string {
 }
 
 func toReason(err error) string {
-	if err != nil {
-		if _, ok := err.(*extensionapi.ApiError); ok {
-			return "API error"
-		}
+	if _, ok := err.(*extensionapi.ApiError); ok {
+		return "API error"
 	}
 	return "Internal error"
 }

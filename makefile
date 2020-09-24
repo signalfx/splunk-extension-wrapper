@@ -18,6 +18,8 @@ build:
 
 
 package:
+	# this "magic" file enables access to Lambda-managed runtimes
+	# this is only required during preview access
 	touch bin/preview-extensions-ggqizro707
 	cd bin; zip -r extensions.zip * -x '**/*.zip'
 
