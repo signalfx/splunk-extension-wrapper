@@ -10,15 +10,18 @@ The SignalFx Lambda Extension Layer provides customers with a simplified runtime
 |lambda.function.initialization|Counter|Number of extension starts. This is the equivalent of the number of cold starts.|
 |lambda.function.shutdown|Counter|Number of extension shutdowns.|
 |lambda.function.lifetime|Gauge|Lifetime of one extension (in milliseconds).| 
-|lambda.function.active|Gauge|It is periodically emitted over lifetime of an extension (value is always 1).| 
 
 Reported dimension:
 
 |Dimension name|Description|
 |---|---|
 |AWSUniqueId|Unique ID used for correlation with the results of AWS/Lambda tag syncing.|
-|name|The name of the function.|
-|version|The version of the function.|
+|aws_arn|ARN of the Lambda function instance|
+|aws_region|AWS Region|
+|aws_account_id|AWS Account ID|
+|aws_function_name|The name of the Lambda function|
+|aws_function_version|The version of the Lambda function|
+|aws_function_runtime|AWS execution environment|
 |cause|It is only present in the shutdown metric. It holds the reason of the shutdown.|
 
 # CONFIGURATION
@@ -33,6 +36,7 @@ Supported variables:
 |INGEST|`https://ingest.signalfx.com/v2/datapoint`|`https://ingest.{REALM}.signalfx.com/v2/datapoint`|A metrics ingest endpoint as described [here](https://developers.signalfx.com/ingest_data_reference.html#tag/Send-Metrics).|
 |TOKEN| | |An access token as described [here](https://docs.signalfx.com/en/latest/admin-guide/tokens.html#access-tokens).|
 |REPORTING_RATE|`15`|An integer (seconds). Minimum value is 1s.|Specifies how often data points are sent to SignalFx. It could happen that data points are less dense than expected. A possible reason is that the extension does not report counters of 0 value (due to optimization).|  
+|REPORTING_TIMEOUT|`5`|An integer (seconds). Minimum value is 1s.|Specifies the time to fail datapoint requests if they don't succeed.|
 |VERBOSE|`false`|`true` or `false`|Enables verbose logging. Logs are stored in a CloudWatch Logs group associated with a Lambda function.|
 
 # BUILDING

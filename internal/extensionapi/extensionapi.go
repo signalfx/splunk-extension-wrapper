@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/arn"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -138,16 +137,6 @@ func (api RegisteredApi) NextEvent() (*Event, error) {
 	log.Printf("Unmarshaled event: %v\n", *nextResp)
 
 	return nextResp, nil
-}
-
-func (next Event) AWSUniqueId(functionName string) string {
-	arn, err := arn.Parse(next.InvokedFunctionArn)
-
-	if err != nil {
-		log.Panicf("can't parse ARN: %v\n", next.InvokedFunctionArn)
-	}
-
-	return fmt.Sprintf("lambda_%s_%s_%s", functionName, arn.Region, arn.AccountID)
 }
 
 func (next Event) IsShutdown() bool {

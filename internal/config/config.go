@@ -12,6 +12,7 @@ import (
 const defaultIngestURL = "https://ingest.signalfx.com/v2/datapoint"
 const defaultToken = ""
 const defaultReportingDuration = time.Duration(15) * time.Second
+const defaultReportingTimeout = time.Duration(5) * time.Second
 const defaultVerbose = false
 
 const minTokenLength = 10 // SFx Access Tokens are 22 chars long in 2019 but accept 10 or more chars just in case
@@ -19,21 +20,24 @@ const minTokenLength = 10 // SFx Access Tokens are 22 chars long in 2019 but acc
 const ingestURLEnv = "INGEST"
 const tokenEnv = "TOKEN"
 const reportingDelayEnv = "REPORTING_RATE"
+const reportingTimeoutEnv = "REPORTING_TIMEOUT"
 const verboseEnv = "VERBOSE"
 
 type Configuration struct {
-	IngestURL      string
-	Token          string
-	ReportingDelay time.Duration
-	Verbose        bool
+	IngestURL        string
+	Token            string
+	ReportingDelay   time.Duration
+	ReportingTimeout time.Duration
+	Verbose          bool
 }
 
 func New() Configuration {
 	return Configuration{
-		IngestURL:      strOrDefault(ingestURLEnv, defaultIngestURL),
-		Token:          strOrDefault(tokenEnv, defaultToken),
-		ReportingDelay: durationOrDefault(reportingDelayEnv, defaultReportingDuration),
-		Verbose:        boolOrDefault(verboseEnv, defaultVerbose),
+		IngestURL:        strOrDefault(ingestURLEnv, defaultIngestURL),
+		Token:            strOrDefault(tokenEnv, defaultToken),
+		ReportingDelay:   durationOrDefault(reportingDelayEnv, defaultReportingDuration),
+		ReportingTimeout: durationOrDefault(reportingTimeoutEnv, defaultReportingTimeout),
+		Verbose:          boolOrDefault(verboseEnv, defaultVerbose),
 	}
 }
 
@@ -41,10 +45,11 @@ func (c Configuration) String() string {
 	builder := strings.Builder{}
 	addLine := func(format string, arg interface{}) { builder.WriteString(fmt.Sprintf(format+"\n", arg)) }
 
-	addLine("Ingest URL      = %v", c.IngestURL)
-	addLine("Token           = %v", obfuscatedToken(c.Token))
-	addLine("Reporting Delay = %v", c.ReportingDelay.Seconds())
-	addLine("Verbose         = %v", c.Verbose)
+	addLine("Ingest URL        = %v", c.IngestURL)
+	addLine("Token             = %v", obfuscatedToken(c.Token))
+	addLine("Reporting Delay   = %v", c.ReportingDelay.Seconds())
+	addLine("Reporting Timeout = %v", c.ReportingTimeout.Seconds())
+	addLine("Verbose           = %v", c.Verbose)
 
 	return builder.String()
 }

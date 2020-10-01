@@ -39,7 +39,7 @@ func main() {
 	if apiErr == nil {
 		event, apiErr := api.NextEvent()
 		if apiErr == nil && !event.IsShutdown() {
-			m.SetDefaultDimensions(api.FunctionName, api.FunctionVersion, event.AWSUniqueId(api.FunctionName))
+			m.SetDefaultDimensions(event.InvokedFunctionArn, api.FunctionName, api.FunctionVersion)
 			m.StartScheduler()
 
 			for apiErr == nil && !event.IsShutdown() {

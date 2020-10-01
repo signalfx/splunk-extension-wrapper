@@ -12,11 +12,14 @@ const invocations = "lambda.function.invocation"
 const environmentStart = "lambda.function.initialization"
 const environmentShutdown = "lambda.function.shutdown"
 const environmentLifetime = "lambda.function.lifetime"
-const environmentActive = "lambda.function.active"
 
 const dimShutdownCause = "cause"
-const dimFunctionName = "name"
-const dimFunctionVersion = "version"
+const dimRegion = "aws_region"
+const dimAccountId = "aws_account_id"
+const dimFunctionName = "aws_function_name"
+const dimFunctionVersion = "aws_function_version"
+const dimArn = "aws_arn"
+const dimRuntime = "aws_function_runtime"
 const dimAwsUniqueId = "AWSUniqueId"
 
 type metrics struct {
@@ -76,14 +79,9 @@ func (m *metrics) invocationsCounter() *datapoint.Datapoint {
 	)
 }
 
-func activeCounter() *datapoint.Datapoint {
-	return sfxclient.Gauge(environmentActive, nil, 1)
-}
-
 func (m *metrics) Datapoints() []*datapoint.Datapoint {
 	dps := []*datapoint.Datapoint{
 		m.invocationsCounter(),
-		activeCounter(),
 	}
 
 	for {
