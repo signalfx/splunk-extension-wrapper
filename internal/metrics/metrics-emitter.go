@@ -58,6 +58,7 @@ func (emitter *MetricEmitter) SetDefaultDimensions(functionArn, functionName, fu
 		dimAccountId:       parsedArn.AccountID,
 		dimFunctionName:    functionName,
 		dimFunctionVersion: functionVersion,
+		dimQualifier:       resourceFromArn(parsedArn).qualifier,
 		dimArn:             functionArn,
 		dimRuntime:         os.Getenv(awsExecutionEnv),
 		dimAwsUniqueId:     buildAWSUniqueId(parsedArn, functionName),

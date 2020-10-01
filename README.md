@@ -21,6 +21,7 @@ Reported dimension:
 |aws_account_id|AWS Account ID|
 |aws_function_name|The name of the Lambda function|
 |aws_function_version|The version of the Lambda function|
+|aws_function_qualifier|AWS Function Version Qualifier (version or version alias)|
 |aws_function_runtime|AWS execution environment|
 |cause|It is only present in the shutdown metric. It holds the reason of the shutdown.|
 

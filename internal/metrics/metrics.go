@@ -19,6 +19,7 @@ const dimAccountId = "aws_account_id"
 const dimFunctionName = "aws_function_name"
 const dimFunctionVersion = "aws_function_version"
 const dimArn = "aws_arn"
+const dimQualifier = "aws_function_qualifier"
 const dimRuntime = "aws_function_runtime"
 const dimAwsUniqueId = "AWSUniqueId"
 
