@@ -4,90 +4,62 @@ import (
 	"github.com/signalfx/golib/v3/datapoint"
 	"github.com/signalfx/golib/v3/sfxclient"
 	"log"
-	"sync/atomic"
 	"time"
 )
 
-const invocations = "lambda.function.invocation"
 const environmentStart = "lambda.function.initialization"
 const environmentShutdown = "lambda.function.shutdown"
 const environmentLifetime = "lambda.function.lifetime"
 
-const dimShutdownCause = "cause"
-const dimRegion = "aws_region"
-const dimAccountId = "aws_account_id"
-const dimFunctionName = "aws_function_name"
-const dimFunctionVersion = "aws_function_version"
-const dimArn = "aws_arn"
-const dimQualifier = "aws_function_qualifier"
-const dimRuntime = "aws_function_runtime"
-const dimAwsUniqueId = "AWSUniqueId"
-
-type metrics struct {
+type environmentMetrics struct {
 	adhocDps chan *datapoint.Datapoint
 
 	startTime time.Time
 	endTime   time.Time
-
-	invocations int64
 }
 
-func newMetrics() metrics {
-	return metrics{
+func newEnvironmentMetrics() environmentMetrics {
+	return environmentMetrics{
 		adhocDps: make(chan *datapoint.Datapoint, 3),
 	}
 }
 
-func (m *metrics) markStart() {
-	m.startTime = time.Now()
-	m.adhocDps <- m.startCounter()
+func (em *environmentMetrics) markStart() {
+	em.startTime = time.Now()
+	em.adhocDps <- em.startCounter()
 }
 
-func (m *metrics) markEnd(cause string) {
-	m.endTime = time.Now()
-	m.adhocDps <- m.endCounter(cause)
-	m.adhocDps <- m.envDuration()
+func (em *environmentMetrics) markEnd(cause string) {
+	em.endTime = time.Now()
+	em.adhocDps <- em.endCounter(cause)
+	em.adhocDps <- em.envDuration()
 }
 
-func (m *metrics) Invoked() {
-	atomic.AddInt64(&m.invocations, 1)
-}
-
-func (m metrics) startCounter() *datapoint.Datapoint {
+func (em environmentMetrics) startCounter() *datapoint.Datapoint {
 	dp := sfxclient.Counter(environmentStart, nil, 1)
-	dp.Timestamp = m.startTime
+	dp.Timestamp = em.startTime
 	return dp
 }
 
-func (m metrics) endCounter(cause string) *datapoint.Datapoint {
+func (em environmentMetrics) endCounter(cause string) *datapoint.Datapoint {
 	dp := sfxclient.Counter(environmentShutdown, map[string]string{dimShutdownCause: cause}, 1)
-	dp.Timestamp = m.endTime
+	dp.Timestamp = em.endTime
 	return dp
 }
 
-func (m metrics) envDuration() *datapoint.Datapoint {
-	dur := m.endTime.Sub(m.startTime)
+func (em environmentMetrics) envDuration() *datapoint.Datapoint {
+	dur := em.endTime.Sub(em.startTime)
 	dp := sfxclient.Gauge(environmentLifetime, nil, dur.Milliseconds())
-	dp.Timestamp = m.endTime
+	dp.Timestamp = em.endTime
 	return dp
 }
 
-func (m *metrics) invocationsCounter() *datapoint.Datapoint {
-	return sfxclient.Counter(
-		invocations,
-		nil,
-		atomic.SwapInt64(&m.invocations, 0),
-	)
-}
-
-func (m *metrics) Datapoints() []*datapoint.Datapoint {
-	dps := []*datapoint.Datapoint{
-		m.invocationsCounter(),
-	}
+func (em *environmentMetrics) Datapoints() []*datapoint.Datapoint {
+	var dps []*datapoint.Datapoint
 
 	for {
 		select {
-		case dp := <-m.adhocDps:
+		case dp := <-em.adhocDps:
 			log.Printf("drainig adhoc dps: %v", dp)
 			dps = append(dps, dp)
 		default:

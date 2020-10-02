@@ -37,21 +37,17 @@ func main() {
 	api, apiErr := extensionapi.Register(extensionName())
 
 	if apiErr == nil {
+		m.SetFunction(api.FunctionName, api.FunctionVersion)
 		event, apiErr := api.NextEvent()
-		if apiErr == nil && !event.IsShutdown() {
-			m.SetDefaultDimensions(event.InvokedFunctionArn, api.FunctionName, api.FunctionVersion)
-			m.StartScheduler()
-
+		if apiErr == nil {
 			for apiErr == nil && !event.IsShutdown() {
-				m.Invoked()
+				m.Invoked(event.InvokedFunctionArn)
 				event, apiErr = api.NextEvent()
 			}
 
 			if event.IsShutdown() {
 				m.Shutdown(event.ShutdownReason)
 			}
-		} else {
-			log.Printf("no events received")
 		}
 	}
 
@@ -70,6 +66,7 @@ func initLogging() {
 	log.SetFlags(log.Lmsgprefix)
 
 	log.Printf("%v, version: %v", extensionName(), gitVersion)
+	log.Printf("lambda region: %v", os.Getenv("AWS_REGION"))
 	log.Printf("lambda runtime: %v", os.Getenv("AWS_EXECUTION_ENV"))
 
 	configuration := config.New()

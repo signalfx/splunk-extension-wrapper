@@ -15,8 +15,14 @@ const awsExecutionEnv = "AWS_EXECUTION_ENV"
 type MetricEmitter struct {
 	config    *config.Configuration
 	scheduler *sfxclient.Scheduler
+	started   bool
 
-	metrics
+	functionName    string
+	functionVersion string
+
+	invocationsCounters map[string]*invocationsCounter
+
+	environmentMetrics
 }
 
 func New() *MetricEmitter {
@@ -32,41 +38,55 @@ func New() *MetricEmitter {
 		config:    &configuration,
 		scheduler: scheduler,
 
-		metrics: newMetrics(),
+		invocationsCounters: make(map[string]*invocationsCounter),
+
+		environmentMetrics: newEnvironmentMetrics(),
 	}
 
-	scheduler.AddCallback(&emitter.metrics)
+	scheduler.AddCallback(&emitter.environmentMetrics)
 
-	emitter.metrics.markStart()
+	emitter.environmentMetrics.markStart()
 
 	return emitter
 }
 
-func (emitter *MetricEmitter) StartScheduler() {
-	go emitter.scheduler.Schedule(context.Background())
-}
-
-func (emitter *MetricEmitter) SetDefaultDimensions(functionArn, functionName, functionVersion string) {
-	parsedArn, err := arn.Parse(functionArn)
-
-	if err != nil {
-		log.Panicf("can't parse ARN: %v\n", functionArn)
+func (emitter *MetricEmitter) Invoked(functionArn string) {
+	if counter, found := emitter.invocationsCounters[functionArn]; found {
+		counter.invoked()
+	} else {
+		emitter.registerCounter(functionArn)
 	}
 
-	emitter.scheduler.DefaultDimensions(map[string]string{
-		dimRegion:          parsedArn.Region,
-		dimAccountId:       parsedArn.AccountID,
-		dimFunctionName:    functionName,
-		dimFunctionVersion: functionVersion,
-		dimQualifier:       resourceFromArn(parsedArn).qualifier,
-		dimArn:             functionArn,
-		dimRuntime:         os.Getenv(awsExecutionEnv),
-		dimAwsUniqueId:     buildAWSUniqueId(parsedArn, functionName),
-	})
+	if !emitter.started {
+		dims := emitter.dims(functionArn)
+		delete(dims, dimQualifier) // the env metrics are only related to the function version
+		emitter.scheduler.DefaultDimensions(dims)
+		go emitter.scheduler.Schedule(context.Background())
+		emitter.started = true
+	}
+}
+
+func (emitter *MetricEmitter) registerCounter(functionArn string) {
+	counter := &invocationsCounter{}
+	counter.invoked()
+
+	emitter.invocationsCounters[functionArn] = counter
+
+	emitter.scheduler.GroupedDefaultDimensions(functionArn, emitter.dims(functionArn))
+	emitter.scheduler.AddGroupedCallback(functionArn, counter)
+}
+
+func (emitter *MetricEmitter) SetFunction(functionName, functionVersion string) {
+	emitter.functionName = functionName
+	emitter.functionVersion = functionVersion
 }
 
 func (emitter *MetricEmitter) Shutdown(reason string) {
-	emitter.metrics.markEnd(reason)
+	if !emitter.started {
+		log.Printf("closing emitter that wasn't started")
+	}
+
+	emitter.environmentMetrics.markEnd(reason)
 
 	if err := emitter.scheduler.ReportOnce(context.Background()); err != nil {
 		log.SetOutput(os.Stderr)
@@ -74,6 +94,20 @@ func (emitter *MetricEmitter) Shutdown(reason string) {
 	}
 }
 
-func buildAWSUniqueId(functionArn arn.ARN, functionName string) string {
-	return fmt.Sprintf("lambda_%s_%s_%s", functionName, functionArn.Region, functionArn.AccountID)
+func (emitter MetricEmitter) buildAWSUniqueId(functionArn arn.ARN) string {
+	return fmt.Sprintf("lambda_%s_%s_%s", emitter.functionName, functionArn.Region, functionArn.AccountID)
+}
+
+func (emitter MetricEmitter) arnWithVersion(parsedArn arn.ARN) string {
+	resource := resourceFromArn(parsedArn)
+
+	if emitter.functionVersion != "$LATEST" {
+		resource.qualifier = emitter.functionVersion
+	} else {
+		resource.qualifier = emptyQualifier
+	}
+
+	parsedArn.Resource = resource.String()
+
+	return parsedArn.String()
 }
