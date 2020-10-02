@@ -18,7 +18,7 @@ func resourceFromArn(arn arn.ARN) functionResource {
 	}
 
 	qualifier := ""
-	if len(split) > 1 {
+	if len(split) > 2 {
 		qualifier = split[2]
 	}
 

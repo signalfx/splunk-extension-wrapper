@@ -70,6 +70,8 @@ func initLogging() {
 	log.SetFlags(log.Lmsgprefix)
 
 	log.Printf("%v, version: %v", extensionName(), gitVersion)
+	log.Printf("lambda runtime: %v", os.Getenv("AWS_EXECUTION_ENV"))
+
 	configuration := config.New()
 
 	if !configuration.Verbose {
