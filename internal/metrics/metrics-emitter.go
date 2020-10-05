@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/signalfx/golib/v3/sfxclient"
 	"github.com/splunk/lambda-extension/internal/config"
+	"github.com/splunk/lambda-extension/internal/util"
 	"log"
 	"os"
 )
@@ -20,7 +21,9 @@ type MetricEmitter struct {
 	functionName    string
 	functionVersion string
 
-	invocationsCounters map[string]*invocationsCounter
+	arnToCounter map[string]*invocationsCounter
+
+	ctx context.Context
 
 	environmentMetrics
 }
@@ -31,6 +34,7 @@ func New() *MetricEmitter {
 	scheduler := sfxclient.NewScheduler()
 	scheduler.Sink.(*sfxclient.HTTPSink).DatapointEndpoint = configuration.IngestURL
 	scheduler.Sink.(*sfxclient.HTTPSink).AuthToken = configuration.Token
+	scheduler.Sink.(*sfxclient.HTTPSink).Client.Timeout = configuration.ReportingTimeout
 	scheduler.ReportingDelay(configuration.ReportingDelay)
 	scheduler.ReportingTimeout(configuration.ReportingTimeout)
 
@@ -38,9 +42,15 @@ func New() *MetricEmitter {
 		config:    &configuration,
 		scheduler: scheduler,
 
-		invocationsCounters: make(map[string]*invocationsCounter),
+		arnToCounter: make(map[string]*invocationsCounter),
+
+		ctx: context.Background(),
 
 		environmentMetrics: newEnvironmentMetrics(),
+	}
+
+	if configuration.HttpTracing {
+		emitter.ctx = util.WithClientTracing(emitter.ctx)
 	}
 
 	scheduler.AddCallback(&emitter.environmentMetrics)
@@ -51,17 +61,18 @@ func New() *MetricEmitter {
 }
 
 func (emitter *MetricEmitter) Invoked(functionArn string) {
-	if counter, found := emitter.invocationsCounters[functionArn]; found {
+	if counter, found := emitter.arnToCounter[functionArn]; found {
 		counter.invoked()
 	} else {
 		emitter.registerCounter(functionArn)
 	}
 
 	if !emitter.started {
+		emitter.markFirstInvocation()
 		dims := emitter.dims(functionArn)
 		delete(dims, dimQualifier) // the env metrics are only related to the function version
 		emitter.scheduler.DefaultDimensions(dims)
-		go emitter.scheduler.Schedule(context.Background())
+		go emitter.scheduler.Schedule(emitter.ctx)
 		emitter.started = true
 	}
 }
@@ -70,7 +81,7 @@ func (emitter *MetricEmitter) registerCounter(functionArn string) {
 	counter := &invocationsCounter{}
 	counter.invoked()
 
-	emitter.invocationsCounters[functionArn] = counter
+	emitter.arnToCounter[functionArn] = counter
 
 	emitter.scheduler.GroupedDefaultDimensions(functionArn, emitter.dims(functionArn))
 	emitter.scheduler.AddGroupedCallback(functionArn, counter)
@@ -88,7 +99,7 @@ func (emitter *MetricEmitter) Shutdown(reason string) {
 
 	emitter.environmentMetrics.markEnd(reason)
 
-	if err := emitter.scheduler.ReportOnce(context.Background()); err != nil {
+	if err := emitter.scheduler.ReportOnce(emitter.ctx); err != nil {
 		log.SetOutput(os.Stderr)
 		log.Printf("failed to shutdown emitter: %v\n", err)
 	}
@@ -101,12 +112,7 @@ func (emitter MetricEmitter) buildAWSUniqueId(functionArn arn.ARN) string {
 func (emitter MetricEmitter) arnWithVersion(parsedArn arn.ARN) string {
 	resource := resourceFromArn(parsedArn)
 
-	if emitter.functionVersion != "$LATEST" {
-		resource.qualifier = emitter.functionVersion
-	} else {
-		resource.qualifier = emptyQualifier
-	}
-
+	resource.qualifier = emitter.functionVersion
 	parsedArn.Resource = resource.String()
 
 	return parsedArn.String()

@@ -8,25 +8,37 @@ import (
 )
 
 const environmentStart = "lambda.function.initialization"
+const environmentStartDuration = "lambda.function.initialization.latency"
 const environmentShutdown = "lambda.function.shutdown"
 const environmentLifetime = "lambda.function.lifetime"
+
+// keep this value appropriate to the number of adhoc metrics generated
+// so the routine that reports adhoc metrics is not blocked
+// the adhocDps channel is drained everytime metrics are send to SignalFx
+const adhocDpsChannelBuffer = 4
 
 type environmentMetrics struct {
 	adhocDps chan *datapoint.Datapoint
 
-	startTime time.Time
-	endTime   time.Time
+	startTime       time.Time
+	firstInvocation time.Time
+	endTime         time.Time
 }
 
 func newEnvironmentMetrics() environmentMetrics {
 	return environmentMetrics{
-		adhocDps: make(chan *datapoint.Datapoint, 3),
+		adhocDps: make(chan *datapoint.Datapoint, adhocDpsChannelBuffer),
 	}
 }
 
 func (em *environmentMetrics) markStart() {
 	em.startTime = time.Now()
 	em.adhocDps <- em.startCounter()
+}
+
+func (em *environmentMetrics) markFirstInvocation() {
+	em.firstInvocation = time.Now()
+	em.adhocDps <- em.startLatency()
 }
 
 func (em *environmentMetrics) markEnd(cause string) {
@@ -38,6 +50,13 @@ func (em *environmentMetrics) markEnd(cause string) {
 func (em environmentMetrics) startCounter() *datapoint.Datapoint {
 	dp := sfxclient.Counter(environmentStart, nil, 1)
 	dp.Timestamp = em.startTime
+	return dp
+}
+
+func (em environmentMetrics) startLatency() *datapoint.Datapoint {
+	dur := em.firstInvocation.Sub(em.startTime)
+	dp := sfxclient.Gauge(environmentStartDuration, nil, dur.Milliseconds())
+	dp.Timestamp = em.firstInvocation
 	return dp
 }
 

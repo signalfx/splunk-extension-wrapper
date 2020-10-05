@@ -14,6 +14,7 @@ const defaultToken = ""
 const defaultReportingDuration = time.Duration(15) * time.Second
 const defaultReportingTimeout = time.Duration(5) * time.Second
 const defaultVerbose = false
+const defaultHttpTracing = false
 
 const minTokenLength = 10 // SFx Access Tokens are 22 chars long in 2019 but accept 10 or more chars just in case
 
@@ -22,6 +23,7 @@ const tokenEnv = "TOKEN"
 const reportingDelayEnv = "REPORTING_RATE"
 const reportingTimeoutEnv = "REPORTING_TIMEOUT"
 const verboseEnv = "VERBOSE"
+const httpTracingEnv = "HTTP_TRACING"
 
 type Configuration struct {
 	IngestURL        string
@@ -29,6 +31,7 @@ type Configuration struct {
 	ReportingDelay   time.Duration
 	ReportingTimeout time.Duration
 	Verbose          bool
+	HttpTracing      bool
 }
 
 func New() Configuration {
@@ -38,6 +41,7 @@ func New() Configuration {
 		ReportingDelay:   durationOrDefault(reportingDelayEnv, defaultReportingDuration),
 		ReportingTimeout: durationOrDefault(reportingTimeoutEnv, defaultReportingTimeout),
 		Verbose:          boolOrDefault(verboseEnv, defaultVerbose),
+		HttpTracing:      boolOrDefault(httpTracingEnv, defaultHttpTracing),
 	}
 }
 
@@ -50,6 +54,7 @@ func (c Configuration) String() string {
 	addLine("Reporting Delay   = %v", c.ReportingDelay.Seconds())
 	addLine("Reporting Timeout = %v", c.ReportingTimeout.Seconds())
 	addLine("Verbose           = %v", c.Verbose)
+	addLine("HTTP Tracing      = %v", c.HttpTracing)
 
 	return builder.String()
 }

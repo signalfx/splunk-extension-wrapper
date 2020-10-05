@@ -8,6 +8,7 @@ The SignalFx Lambda Extension Layer provides customers with a simplified runtime
 |---|---|---|
 |lambda.function.invocation|Counter|Number of function calls.|
 |lambda.function.initialization|Counter|Number of extension starts. This is the equivalent of the number of cold starts.|
+|lambda.function.initialization.latency|Gauge|Time spent between the function execution and its first invocation (in milliseconds).|
 |lambda.function.shutdown|Counter|Number of extension shutdowns.|
 |lambda.function.lifetime|Gauge|Lifetime of one extension (in milliseconds).| 
 
@@ -21,7 +22,7 @@ Reported dimension:
 |aws_account_id|AWS Account ID|
 |aws_function_name|The name of the Lambda function|
 |aws_function_version|The version of the Lambda function|
-|aws_function_qualifier|AWS Function Version Qualifier (version or version alias)|
+|aws_function_qualifier|AWS Function Version Qualifier (version or version alias, available only for invocations)|
 |aws_function_runtime|AWS execution environment|
 |cause|It is only present in the shutdown metric. It holds the reason of the shutdown.|
 
@@ -39,6 +40,7 @@ Supported variables:
 |REPORTING_RATE|`15`|An integer (seconds). Minimum value is 1s.|Specifies how often data points are sent to SignalFx. It could happen that data points are less dense than expected. A possible reason is that the extension does not report counters of 0 value (due to optimization).|  
 |REPORTING_TIMEOUT|`5`|An integer (seconds). Minimum value is 1s.|Specifies the time to fail datapoint requests if they don't succeed.|
 |VERBOSE|`false`|`true` or `false`|Enables verbose logging. Logs are stored in a CloudWatch Logs group associated with a Lambda function.|
+|HTTP_TRACING|`false`|`true` or `false`|Enables detailed logs on HTTP calls to SignalFx.
 
 # BUILDING
 

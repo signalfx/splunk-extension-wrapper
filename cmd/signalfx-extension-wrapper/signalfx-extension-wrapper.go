@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"github.com/splunk/lambda-extension/internal/config"
 	"github.com/splunk/lambda-extension/internal/extensionapi"
 	"github.com/splunk/lambda-extension/internal/metrics"
@@ -9,6 +11,8 @@ import (
 	"log"
 	"os"
 	"path"
+	"runtime"
+	"strings"
 )
 
 // the correct value is set by the go linker (it's done during build using "ldflags")
@@ -39,15 +43,14 @@ func main() {
 	if apiErr == nil {
 		m.SetFunction(api.FunctionName, api.FunctionVersion)
 		event, apiErr := api.NextEvent()
-		if apiErr == nil {
-			for apiErr == nil && !event.IsShutdown() {
-				m.Invoked(event.InvokedFunctionArn)
-				event, apiErr = api.NextEvent()
-			}
 
-			if event.IsShutdown() {
-				m.Shutdown(event.ShutdownReason)
-			}
+		for apiErr == nil && !event.IsShutdown() {
+			m.Invoked(event.InvokedFunctionArn)
+			event, apiErr = api.NextEvent()
+		}
+
+		if apiErr == nil && event.IsShutdown() {
+			m.Shutdown(event.ShutdownReason)
 		}
 	}
 
@@ -66,8 +69,6 @@ func initLogging() {
 	log.SetFlags(log.Lmsgprefix)
 
 	log.Printf("%v, version: %v", extensionName(), gitVersion)
-	log.Printf("lambda region: %v", os.Getenv("AWS_REGION"))
-	log.Printf("lambda runtime: %v", os.Getenv("AWS_EXECUTION_ENV"))
 
 	configuration := config.New()
 
@@ -75,7 +76,17 @@ func initLogging() {
 		log.SetOutput(ioutil.Discard)
 	}
 
-	log.Println(configuration)
+	log.Printf("lambda region: %v", os.Getenv("AWS_REGION"))
+	log.Printf("lambda runtime: %v", os.Getenv("AWS_EXECUTION_ENV"))
+
+	fmt.Println("GOMAXPROCS", runtime.GOMAXPROCS(0))
+	fmt.Println("NumCPU", runtime.NumCPU())
+	fmt.Println("goroutines on start", runtime.NumGoroutine())
+
+	scanner := bufio.NewScanner(strings.NewReader(configuration.String()))
+	for scanner.Scan() {
+		log.Print(scanner.Text())
+	}
 }
 
 func extensionName() string {
