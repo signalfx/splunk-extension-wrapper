@@ -6,22 +6,22 @@ import (
 	"net/http"
 )
 
-func (api RegisteredApi) InitError(errorType string) error {
+// after calling any of these functions, the extension should exit immediately
+
+func (api RegisteredApi) InitError(errorType string) {
 	log.Println("Reporting an init error")
 
 	err := api.reportError(endpoints.initError, errorType)
 
-	return wrapIfNotNull("failed to report an init error", err)
+	log.Println("Reporting an init error is done with error: ", err)
 }
 
-func (api RegisteredApi) ExitError(errorType string) error {
+func (api RegisteredApi) ExitError(errorType string) {
 	log.Println("Reporting an exit error")
 
 	err := api.reportError(endpoints.exitError, errorType)
 
-	log.Printf("Reporting an exit error [DONE]")
-
-	return wrapIfNotNull("failed to report an exit error", err)
+	log.Println("Reporting an exit error is done with error: ", err)
 }
 
 func (api RegisteredApi) reportError(endpoint, errorType string) error {
@@ -45,12 +45,5 @@ func (api RegisteredApi) reportError(endpoint, errorType string) error {
 		return ApiError("API returned: " + resp.Status)
 	}
 
-	return nil
-}
-
-func wrapIfNotNull(context string, err error) error {
-	if err != nil {
-		return fmt.Errorf(context+": %w", err)
-	}
 	return nil
 }

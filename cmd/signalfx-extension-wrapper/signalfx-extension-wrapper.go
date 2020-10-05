@@ -55,6 +55,7 @@ func main() {
 	}
 
 	if apiErr != nil {
+		log.SetOutput(os.Stderr)
 		reason := toReason(apiErr)
 		if api != nil {
 			api.ExitError(reason)

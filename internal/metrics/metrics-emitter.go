@@ -25,6 +25,8 @@ type MetricEmitter struct {
 
 	ctx context.Context
 
+	sendOutTicker util.Ticker
+
 	environmentMetrics
 }
 
@@ -35,7 +37,6 @@ func New() *MetricEmitter {
 	scheduler.Sink.(*sfxclient.HTTPSink).DatapointEndpoint = configuration.IngestURL
 	scheduler.Sink.(*sfxclient.HTTPSink).AuthToken = configuration.Token
 	scheduler.Sink.(*sfxclient.HTTPSink).Client.Timeout = configuration.ReportingTimeout
-	scheduler.ReportingDelay(configuration.ReportingDelay)
 	scheduler.ReportingTimeout(configuration.ReportingTimeout)
 
 	emitter := &MetricEmitter{
@@ -46,7 +47,7 @@ func New() *MetricEmitter {
 
 		ctx: context.Background(),
 
-		environmentMetrics: newEnvironmentMetrics(),
+		sendOutTicker: util.NewTicker(configuration.ReportingDelay),
 	}
 
 	if configuration.HttpTracing {
@@ -60,7 +61,7 @@ func New() *MetricEmitter {
 	return emitter
 }
 
-func (emitter *MetricEmitter) Invoked(functionArn string) {
+func (emitter *MetricEmitter) Invoked(functionArn string) error {
 	if counter, found := emitter.arnToCounter[functionArn]; found {
 		counter.invoked()
 	} else {
@@ -72,19 +73,10 @@ func (emitter *MetricEmitter) Invoked(functionArn string) {
 		dims := emitter.dims(functionArn)
 		delete(dims, dimQualifier) // the env metrics are only related to the function version
 		emitter.scheduler.DefaultDimensions(dims)
-		go emitter.scheduler.Schedule(emitter.ctx)
 		emitter.started = true
 	}
-}
 
-func (emitter *MetricEmitter) registerCounter(functionArn string) {
-	counter := &invocationsCounter{}
-	counter.invoked()
-
-	emitter.arnToCounter[functionArn] = counter
-
-	emitter.scheduler.GroupedDefaultDimensions(functionArn, emitter.dims(functionArn))
-	emitter.scheduler.AddGroupedCallback(functionArn, counter)
+	return emitter.tryToSendOut()
 }
 
 func (emitter *MetricEmitter) SetFunction(functionName, functionVersion string) {
@@ -116,4 +108,22 @@ func (emitter MetricEmitter) arnWithVersion(parsedArn arn.ARN) string {
 	parsedArn.Resource = resource.String()
 
 	return parsedArn.String()
+}
+
+func (emitter *MetricEmitter) tryToSendOut() error {
+	if !emitter.sendOutTicker.Tick() {
+		return nil
+	}
+	log.Println("sending metrics")
+	return emitter.scheduler.ReportOnce(emitter.ctx)
+}
+
+func (emitter *MetricEmitter) registerCounter(functionArn string) {
+	counter := &invocationsCounter{}
+	counter.invoked()
+
+	emitter.arnToCounter[functionArn] = counter
+
+	emitter.scheduler.GroupedDefaultDimensions(functionArn, emitter.dims(functionArn))
+	emitter.scheduler.AddGroupedCallback(functionArn, counter)
 }
