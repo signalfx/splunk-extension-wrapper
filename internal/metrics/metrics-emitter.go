@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/signalfx/golib/v3/sfxclient"
 	"github.com/splunk/lambda-extension/internal/config"
+	"github.com/splunk/lambda-extension/internal/shutdown"
 	"github.com/splunk/lambda-extension/internal/util"
 	"log"
 	"os"
@@ -61,7 +62,7 @@ func New() *MetricEmitter {
 	return emitter
 }
 
-func (emitter *MetricEmitter) Invoked(functionArn string) error {
+func (emitter *MetricEmitter) Invoked(functionArn string) shutdown.Condition {
 	if counter, found := emitter.arnToCounter[functionArn]; found {
 		counter.invoked()
 	} else {
@@ -84,16 +85,16 @@ func (emitter *MetricEmitter) SetFunction(functionName, functionVersion string) 
 	emitter.functionVersion = functionVersion
 }
 
-func (emitter *MetricEmitter) Shutdown(reason string) {
+func (emitter *MetricEmitter) Shutdown(condition shutdown.Condition) {
 	if !emitter.started {
 		log.Printf("closing emitter that wasn't started")
 	}
 
-	emitter.environmentMetrics.markEnd(reason)
+	emitter.environmentMetrics.markEnd(condition.Reason())
 
 	if err := emitter.scheduler.ReportOnce(emitter.ctx); err != nil {
 		log.SetOutput(os.Stderr)
-		log.Printf("failed to shutdown emitter: %v\n", err)
+		log.Printf("failed to report metrics on shutdown: %v\n", err)
 	}
 }
 
@@ -110,12 +111,17 @@ func (emitter MetricEmitter) arnWithVersion(parsedArn arn.ARN) string {
 	return parsedArn.String()
 }
 
-func (emitter *MetricEmitter) tryToSendOut() error {
+func (emitter *MetricEmitter) tryToSendOut() shutdown.Condition {
 	if !emitter.sendOutTicker.Tick() {
 		return nil
 	}
 	log.Println("sending metrics")
-	return emitter.scheduler.ReportOnce(emitter.ctx)
+	err := emitter.scheduler.ReportOnce(emitter.ctx)
+	if err == nil {
+		return nil
+	}
+
+	return shutdown.Metric(fmt.Sprintf("failed to send metrics: %v", err))
 }
 
 func (emitter *MetricEmitter) registerCounter(functionArn string) {

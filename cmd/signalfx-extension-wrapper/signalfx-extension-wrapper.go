@@ -7,6 +7,7 @@ import (
 	"github.com/splunk/lambda-extension/internal/extensionapi"
 	"github.com/splunk/lambda-extension/internal/metrics"
 	"github.com/splunk/lambda-extension/internal/ossignal"
+	"github.com/splunk/lambda-extension/internal/shutdown"
 	"io/ioutil"
 	"log"
 	"os"
@@ -23,45 +24,56 @@ func main() {
 
 	ossignal.Watch()
 
-	var api *extensionapi.RegisteredApi
 	m := metrics.New()
+
+	shutdownCondition := registerApiAndStartMainLoop(m)
+
+	if shutdownCondition.IsError() {
+		log.SetOutput(os.Stderr)
+	}
+
+	log.Println("shutdown reason:", shutdownCondition.Reason())
+	log.Println("shutdown message:", shutdownCondition.Message())
+
+	m.Shutdown(shutdownCondition)
+}
+
+func registerApiAndStartMainLoop(m *metrics.MetricEmitter) (sc shutdown.Condition) {
+	var api *extensionapi.RegisteredApi
 
 	defer func() {
 		if r := recover(); r != nil {
 			log.SetOutput(os.Stderr)
-			log.Printf("panic condition: %v\n", r)
+			sc = shutdown.Internal(fmt.Sprintf("%v", r))
 			if api != nil {
-				api.ExitError("Internal error")
+				api.ExitError(sc.Reason())
 			}
-			m.Shutdown("Internal error")
-			os.Exit(1)
 		}
 	}()
 
-	api, apiErr := extensionapi.Register(extensionName())
+	api, sc = extensionapi.Register(extensionName())
 
-	if apiErr == nil {
-		m.SetFunction(api.FunctionName, api.FunctionVersion)
-		event, apiErr := api.NextEvent()
+	if sc == nil {
+		sc = mainLoop(api, m)
+	}
 
-		for apiErr == nil && !event.IsShutdown() {
-			m.Invoked(event.InvokedFunctionArn)
-			event, apiErr = api.NextEvent()
-		}
+	return
+}
 
-		if apiErr == nil && event.IsShutdown() {
-			m.Shutdown(event.ShutdownReason)
+func mainLoop(api *extensionapi.RegisteredApi, m *metrics.MetricEmitter) (sc shutdown.Condition) {
+	m.SetFunction(api.FunctionName, api.FunctionVersion)
+
+	var event *extensionapi.Event
+	event, sc = api.NextEvent()
+
+	for sc == nil {
+		sc = m.Invoked(event.InvokedFunctionArn)
+		if sc == nil {
+			event, sc = api.NextEvent()
 		}
 	}
 
-	if apiErr != nil {
-		log.SetOutput(os.Stderr)
-		reason := toReason(apiErr)
-		if api != nil {
-			api.ExitError(reason)
-		}
-		m.Shutdown(reason)
-	}
+	return
 }
 
 func initLogging() {
@@ -80,9 +92,9 @@ func initLogging() {
 	log.Printf("lambda region: %v", os.Getenv("AWS_REGION"))
 	log.Printf("lambda runtime: %v", os.Getenv("AWS_EXECUTION_ENV"))
 
-	fmt.Println("GOMAXPROCS", runtime.GOMAXPROCS(0))
-	fmt.Println("NumCPU", runtime.NumCPU())
-	fmt.Println("goroutines on start", runtime.NumGoroutine())
+	log.Println("GOMAXPROCS", runtime.GOMAXPROCS(0))
+	log.Println("NumCPU", runtime.NumCPU())
+	log.Println("goroutines on start", runtime.NumGoroutine())
 
 	scanner := bufio.NewScanner(strings.NewReader(configuration.String()))
 	for scanner.Scan() {
@@ -92,11 +104,4 @@ func initLogging() {
 
 func extensionName() string {
 	return path.Base(os.Args[0])
-}
-
-func toReason(err error) string {
-	if _, ok := err.(*extensionapi.ApiError); ok {
-		return "API error"
-	}
-	return "Internal error"
 }

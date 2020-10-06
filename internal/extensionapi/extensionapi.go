@@ -4,13 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/splunk/lambda-extension/internal/shutdown"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
 
-const invoke = "INVOKE"
-const shutdown = "SHUTDOWN"
+const (
+	invokeType   = "INVOKE"
+	shutdownType = "SHUTDOWN"
+)
 
 type registerResponse struct {
 	FunctionName    string
@@ -34,20 +37,20 @@ type RegisteredApi struct {
 	registerResponse
 }
 
-func Register(name string) (*RegisteredApi, error) {
+func Register(name string) (*RegisteredApi, shutdown.Condition) {
 	log.Println("Registering...")
 
 	rb, err := json.Marshal(map[string][]string{
 		"events": {"INVOKE", "SHUTDOWN"}})
 
 	if err != nil {
-		return nil, fmt.Errorf("can't marshall body: %v", err)
+		return nil, shutdown.Api(fmt.Sprintf("can't marshall body: %v", err))
 	}
 
 	req, err := http.NewRequest(http.MethodPost, endpoints.register, bytes.NewBuffer(rb))
 
 	if err != nil {
-		return nil, fmt.Errorf("can't create http request: %v", err)
+		return nil, shutdown.Api(fmt.Sprintf("can't create http request: %v", err))
 	}
 
 	req.Header.Set("Lambda-Extension-Name", name)
@@ -55,7 +58,7 @@ func Register(name string) (*RegisteredApi, error) {
 	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		return nil, fmt.Errorf("can't register: %v", err)
+		return nil, shutdown.Api(fmt.Sprintf("can't register: %v", err))
 	}
 	defer resp.Body.Close()
 
@@ -63,7 +66,7 @@ func Register(name string) (*RegisteredApi, error) {
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("can't read body: %v", err)
+		return nil, shutdown.Api(fmt.Sprintf("can't read body: %v", err))
 	}
 
 	body := string(bodyBytes)
@@ -71,20 +74,20 @@ func Register(name string) (*RegisteredApi, error) {
 	log.Printf("Register response: %v\n", body)
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, ApiError("failed to register, API returned: " + resp.Status)
+		return nil, shutdown.Api("failed to register, API returned: " + resp.Status)
 	}
 
 	id, has := resp.Header["Lambda-Extension-Identifier"]
 
 	if !has || len(id) != 1 {
-		return nil, fmt.Errorf("Lambda-Extension-Identifier header missing or ambiguous: %v", id)
+		return nil, shutdown.Api(fmt.Sprintf("Lambda-Extension-Identifier header missing or ambiguous: %v", id))
 	}
 
 	regResponse := &registerResponse{}
 	err = json.Unmarshal(bodyBytes, regResponse)
 
 	if err != nil {
-		return nil, fmt.Errorf("unknown format of a register response")
+		return nil, shutdown.Api(fmt.Sprintf("unknown format of a register response: %v", err))
 	}
 
 	log.Println("Registering [DONE]")
@@ -97,13 +100,13 @@ func Register(name string) (*RegisteredApi, error) {
 		registerResponse: *regResponse}, nil
 }
 
-func (api RegisteredApi) NextEvent() (*Event, error) {
+func (api RegisteredApi) NextEvent() (*Event, shutdown.Condition) {
 	log.Println("Waiting for event")
 
 	req, err := http.NewRequest(http.MethodGet, endpoints.next, nil)
 
 	if err != nil {
-		return nil, fmt.Errorf("can't create http request: %v", err)
+		return nil, shutdown.Api(fmt.Sprintf("can't create http request: %v", err))
 	}
 
 	req.Header.Set("Lambda-Extension-Identifier", api.extensionId)
@@ -111,13 +114,13 @@ func (api RegisteredApi) NextEvent() (*Event, error) {
 	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		return nil, fmt.Errorf("can't get next event: %v", err)
+		return nil, shutdown.Api(fmt.Sprintf("can't get next event: %v", err))
 	}
 	defer resp.Body.Close()
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("can't read body: %v", err)
+		return nil, shutdown.Api(fmt.Sprintf("can't read body: %v", err))
 	}
 
 	body := string(bodyBytes)
@@ -125,24 +128,20 @@ func (api RegisteredApi) NextEvent() (*Event, error) {
 	log.Printf("Received event: %v\n", body)
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, ApiError("failed to get the next event, API returned: " + resp.Status)
+		return nil, shutdown.Api("failed to get the next event, API returned: " + resp.Status)
 	}
 
 	nextResp := &Event{}
 	err = json.Unmarshal(bodyBytes, nextResp)
 	if err != nil {
-		return nil, fmt.Errorf("unknown format of an event")
+		return nil, shutdown.Api(fmt.Sprintf("unknown format of an event: %v", err))
 	}
 
 	log.Printf("Unmarshaled event: %v\n", *nextResp)
 
+	if nextResp.EventType == shutdownType {
+		return nil, shutdown.Reason(nextResp.ShutdownReason)
+	}
+
 	return nextResp, nil
-}
-
-func (next Event) IsShutdown() bool {
-	return next.EventType == shutdown
-}
-
-func (next Event) GetShutdownReason() string {
-	return next.ShutdownReason
 }
