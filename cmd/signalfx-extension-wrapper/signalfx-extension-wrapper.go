@@ -57,6 +57,10 @@ func registerApiAndStartMainLoop(m *metrics.MetricEmitter) (sc shutdown.Conditio
 		sc = mainLoop(api, m)
 	}
 
+	if sc != nil && api != nil {
+		api.ExitError(sc.Reason())
+	}
+
 	return
 }
 

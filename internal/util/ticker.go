@@ -12,18 +12,18 @@ type Ticker interface {
 //
 // The extension should only send metrics once after unfreeze and
 // this ticker does not accumulate ticks when the execution environment is frozen.
-type lossyFixedIntervalTicker struct {
+type lossyTicker struct {
 	tickAfter time.Time
 	interval  time.Duration
 }
 
 func NewTicker(interval time.Duration) Ticker {
-	return &lossyFixedIntervalTicker{
+	return &lossyTicker{
 		interval: interval,
 	}
 }
 
-func (ticker *lossyFixedIntervalTicker) Tick() bool {
+func (ticker *lossyTicker) Tick() bool {
 	now := time.Now()
 
 	defer ticker.skipToNearest(now)
@@ -36,7 +36,7 @@ func (ticker *lossyFixedIntervalTicker) Tick() bool {
 	return now.After(ticker.tickAfter)
 }
 
-func (ticker *lossyFixedIntervalTicker) skipToNearest(now time.Time) {
+func (ticker *lossyTicker) skipToNearest(now time.Time) {
 	if !ticker.tickAfter.After(now) {
 		ticker.tickAfter = now.Add(ticker.interval)
 	}
