@@ -36,3 +36,9 @@ add-layer-version-permission:
 	LAYER_NAME="$(LAYER_NAME)" \
 	REGIONS="$(REGIONS)" \
 		scripts/add-layer-version-permission.sh
+
+list-layer-versions:
+	PROFILE="$(PROFILE)" \
+	LAYER_NAME="$(LAYER_NAME)" \
+	REGIONS="$(REGIONS)" \
+		scripts/list-layer-versions.sh
