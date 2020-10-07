@@ -56,7 +56,7 @@ To deploy the layer as a new version:
 make add-layer-version PROFILE=integrations REGIONS=us-east-1 LAYER_NAME=signalfx-extension-wrapper
 ```
 
-To make a layer globally available to all AWS accounts:
+To make a layer globally available to all AWS accounts (example for us-east-1 only):
 
 ```
 make add-layer-version-permission PROFILE=integrations REGIONS=us-east-1 LAYER_NAME=signalfx-extension-wrapper
