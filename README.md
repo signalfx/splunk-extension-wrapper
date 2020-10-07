@@ -50,15 +50,21 @@ To build and package extension to a zip file:
 make
 ```
 
-To publish the zip as a layer:
+To deploy the layer as a new version:
 
 ```
-make publish PROFILE=integrations REGION=us-east-1 NAME=signalfx-extension-wrapper
+make add-layer-version PROFILE=integrations REGIONS=us-east-1 LAYER_NAME=signalfx-extension-wrapper
+```
+
+To make a layer globally available to all AWS accounts (example for us-east-1 only):
+
+```
+make add-layer-version-permission PROFILE=integrations REGIONS=us-east-1 LAYER_NAME=signalfx-extension-wrapper
 ```
 
 Variables explanation:
 * PROFILE - the name of the [AWS CLI profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) - indicates the AWS account where the layer will be published
-* REGION - indicates the region where the layer will be published
-* NAME - the name of the layer
+* REGIONS - a space-delimited list of regions where the layer will be published
+* LAYER_NAME - the name of the layer
 
 The published layer can be attached to any lambda function.
