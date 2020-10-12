@@ -30,7 +30,7 @@ for region in ${REGIONS}; do
     --version-number "${LATEST_VERSION}" \
     --action lambda:GetLayerVersion \
     --statement-id any-account \
-    --principal "134183635603" \
+    --principal "*" \
     --output text \
     --region "${region}" ||
     _panic "Can't set permission for ${LAYER_NAME}:${LATEST_VERSION}"
