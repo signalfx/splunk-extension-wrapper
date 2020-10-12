@@ -40,7 +40,7 @@ Supported variables:
 |REPORTING_RATE|`15`|An integer (seconds). Minimum value is 1s.|Specifies how often data points are sent to SignalFx. It could happen that data points are less dense than expected. A possible reason is that the extension does not report counters of 0 value (due to optimization).|  
 |REPORTING_TIMEOUT|`5`|An integer (seconds). Minimum value is 1s.|Specifies the time to fail datapoint requests if they don't succeed.|
 |VERBOSE|`false`|`true` or `false`|Enables verbose logging. Logs are stored in a CloudWatch Logs group associated with a Lambda function.|
-|HTTP_TRACING|`false`|`true` or `false`|Enables detailed logs on HTTP calls to SignalFx.
+|HTTP_TRACING|`false`|`true` or `false`|Enables detailed logs on HTTP calls to SignalFx.|
 
 # BUILDING
 
