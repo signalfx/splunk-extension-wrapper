@@ -41,7 +41,7 @@ func Register(name string) (*RegisteredApi, shutdown.Condition) {
 	log.Println("Registering...")
 
 	rb, err := json.Marshal(map[string][]string{
-		"events": {"INVOKE", "SHUTDOWN"}})
+		"events": {invokeType, shutdownType}})
 
 	if err != nil {
 		return nil, shutdown.Api(fmt.Sprintf("can't marshall body: %v", err))
