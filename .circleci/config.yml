@@ -32,7 +32,7 @@ commands:
           paths:
             - /go/pkg/mod
   persists_regions:
-    description: Persists a file with supported regions to a workspace
+    description: Persists supported regions to a workspace
     steps:
       - persist_to_workspace:
           root: bin
@@ -80,16 +80,19 @@ jobs:
     steps:
       - aws-cli/setup
       - checkout
-      - restore_bin
+      - restore_bin # restores the layer artefact persisted in a workspace
       - run:
           name: Publish layer version
           command: make add-layer-version
+      - run:
+          name: List supported regions
+          command: make supported-regions
+      - persists_regions
       - run:
           name: List layer versions
           command: |
             mkdir ~/versions
             make list-layer-versions | tee ~/versions/layers
-      - persists_regions
       - store_artifacts:
           path: bin/regions
       - store_artifacts:
@@ -99,7 +102,7 @@ jobs:
     steps:
       - aws-cli/setup
       - checkout
-      - restore_bin
+      - restore_bin # restores supported regions persisted in a workspace
       - run:
           name: Add global permission to layer version
           command: make add-layer-version-permission
