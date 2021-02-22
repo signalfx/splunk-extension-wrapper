@@ -13,6 +13,7 @@ commands:
       - store_artifacts:
           path: << parameters.dir >>
   go_mod_download:
+    description: Download go modules required by the project
     steps:
       - restore_cache:
           key: v1-go-mod-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
@@ -30,6 +31,19 @@ commands:
           key: v1-go-mod-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
           paths:
             - /go/pkg/mod
+  persists_regions:
+    description: Persists a file with supported regions to a workspace
+    steps:
+      - persist_to_workspace:
+          root: bin
+          paths:
+            - ./regions
+  restore_bin:
+    description: Restores the bin directory previously persisted in a workspace
+    steps:
+      - run: mkdir bin
+      - attach_workspace:
+          at: bin
 
 orbs:
   aws-cli: circleci/aws-cli@1.4.0
@@ -66,9 +80,7 @@ jobs:
     steps:
       - aws-cli/setup
       - checkout
-      - run: mkdir bin
-      - attach_workspace:
-          at: bin
+      - restore_bin
       - run:
           name: Publish layer version
           command: make add-layer-version
@@ -77,6 +89,9 @@ jobs:
           command: |
             mkdir ~/versions
             make list-layer-versions | tee ~/versions/layers
+      - persists_regions
+      - store_artifacts:
+          path: bin/regions
       - store_artifacts:
           path: ~/versions
   make_layer_version_public:
@@ -84,6 +99,7 @@ jobs:
     steps:
       - aws-cli/setup
       - checkout
+      - restore_bin
       - run:
           name: Add global permission to layer version
           command: make add-layer-version-permission
