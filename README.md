@@ -68,3 +68,10 @@ Variables explanation:
 * LAYER_NAME - the name of the layer
 
 The published layer can be attached to any lambda function.
+
+
+### Deploy to a specified set of regions (example)
+
+```
+PROFILE=rnd REGIONS="us-east-1 ap-northeast-1" CI=t make all add-layer-version add-layer-version-permission
+```
