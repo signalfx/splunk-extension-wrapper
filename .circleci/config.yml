@@ -82,12 +82,12 @@ jobs:
       - checkout
       - restore_bin # restores the layer artefact persisted in a workspace
       - run:
-          name: Publish layer version
-          command: make add-layer-version
-      - run:
           name: List supported regions
           command: make supported-regions
       - persists_regions
+      - run:
+          name: Publish layer version
+          command: make add-layer-version
       - run:
           name: List layer versions
           command: |
