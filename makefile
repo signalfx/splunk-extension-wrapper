@@ -32,6 +32,8 @@ $(REGIONS_PATH):
 	mkdir -p $(BIN_DIR)
 ifndef REGIONS
 	AWS_PROFILE="$(PROFILE)" aws ec2 describe-regions --query "Regions[].RegionName" --output text > $(REGIONS_PATH)
+else
+	echo $(REGIONS) > $(REGIONS_PATH)
 endif
 
 .PHONY: supported-regions
