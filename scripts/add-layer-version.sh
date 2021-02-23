@@ -9,13 +9,15 @@ function _panic() {
 [[ -z "$LAYER_NAME" ]] && _panic "Error: LAYER_NAME not defined."
 [[ -z "$ZIP_NAME" ]] && _panic "Error: ZIP_NAME not defined."
 [[ -z "$REGIONS" ]] && _panic "Error: REGIONS not defined."
+[[ -z "$VERSIONS_FILE" ]] && _panic "Error: VERSIONS_FILE not defined."
 
 DESCRIPTION="The SignalFx Lambda Extension Layer provides customers with a simplified runtime-independent interface to collect high-resolution, low-latency metrics on Lambda Function execution."
 
 echo "Adding '${LAYER_NAME}' layer versions..."
 echo "AWS profile: ${PROFILE}"
 echo "Zip file: ${ZIP_NAME}"
-echo "Regions:  ${REGIONS}"
+echo "Regions: ${REGIONS}"
+echo "Versions file: ${VERSIONS_FILE})"
 
 for region in ${REGIONS}; do
   echo "Adding the layer in ${region} region..."
@@ -26,7 +28,8 @@ for region in ${REGIONS}; do
     --license-info "Apache-2.0" \
     --zip-file "fileb://${ZIP_NAME}" \
     --region "${region}" \
-    --no-cli-pager ||
+    --query "LayerVersionArn" --output text \
+    --no-cli-pager >> ${VERSIONS_FILE} ||
     _panic "Stopping script execution due to aws-cli error"
 done
 
