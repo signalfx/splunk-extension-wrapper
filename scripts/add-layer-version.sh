@@ -25,7 +25,7 @@ for region in ${REGIONS}; do
     --description "${DESCRIPTION}" \
     --license-info "Apache-2.0" \
     --zip-file "fileb://${ZIP_NAME}" \
-    --region "${region}"
+    --region "${region}" \
     --no-cli-pager ||
     _panic "Stopping script execution due to aws-cli error"
 done
