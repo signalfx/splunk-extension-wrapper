@@ -135,5 +135,3 @@ This includes:
         * FUNCTION_REALM - realm to which data points will be published (testing)
         * FUNCTION_TOKEN - access token of an organization to which data points will be published (testing)
         * PROFILE - should be set to 'default'
-    * Optional
-        * REGIONS (space separated list of regions) - controls to which regions 
