@@ -19,10 +19,12 @@ echo "Zip file: ${ZIP_NAME}"
 echo "Regions: ${REGIONS}"
 echo "Versions file: ${VERSIONS_FILE})"
 
+export AWS_PROFILE=$PROFILE
+
 for region in ${REGIONS}; do
   echo "Adding the layer in ${region} region..."
 
-  AWS_PROFILE=$PROFILE aws lambda publish-layer-version \
+  aws lambda publish-layer-version \
     --layer-name "${LAYER_NAME}" \
     --description "${DESCRIPTION}" \
     --license-info "Apache-2.0" \
