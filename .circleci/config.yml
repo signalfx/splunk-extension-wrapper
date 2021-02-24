@@ -127,7 +127,7 @@ jobs:
     steps:
       - aws-cli/setup
       - checkout
-      - restore_bin # restores supported regions persisted in a workspace
+      - restore_bin # restores supported regions and layer versions persisted in a workspace
       - run:
           name: Add global permission to layer version
           command: make add-layer-version-permission
