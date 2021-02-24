@@ -62,17 +62,16 @@ add-layer-version: ci-check supported-regions
 	VERSIONS_FILE="$(VERSIONS_FILE)" \
 		scripts/add-layer-version.sh
 
-# TODO use the versions file
 .PHONY: add-layer-version-permission
 add-layer-version-permission: ci-check supported-regions
 	PROFILE="$(PROFILE)" \
 	LAYER_NAME="$(LAYER_NAME)" \
 	REGIONS="$(REGIONS)" \
+	VERSIONS_FILE="$(VERSIONS_FILE)" \
 		scripts/add-layer-version-permission.sh
 
-# TODO remove that step - it isn't needed anymore
-.PHONY: list-layer-versions
-list-layer-versions: supported-regions
+.PHONY: list-latest-versions
+list-latest-versions: supported-regions
 	PROFILE="$(PROFILE)" \
 	LAYER_NAME="$(LAYER_NAME)" \
 	REGIONS="$(REGIONS)" \

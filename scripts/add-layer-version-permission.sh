@@ -8,20 +8,17 @@ function _panic() {
 [[ -z "$PROFILE" ]] && _panic "Error: PROFILE not defined."
 [[ -z "$LAYER_NAME" ]] && _panic "Error: LAYER_NAME not defined."
 [[ -z "$REGIONS" ]] && _panic "Error: REGIONS not defined."
+[[ -z "$VERSIONS_FILE" ]] && _panic "Error: VERSIONS_FILE not defined."
 
 echo "Setting permission for '${LAYER_NAME}' layer versions..."
 echo "AWS profile: ${PROFILE}"
-echo "Regions:  ${REGIONS}"
+echo "Regions: ${REGIONS}"
+echo "Versions file: ${VERSIONS_FILE}"
 
 for region in ${REGIONS}; do
   echo "Making the layer available publicly in ${region} region..."
 
-  LATEST_VERSION=$(AWS_PROFILE=$PROFILE aws lambda list-layer-versions \
-    --layer-name "${LAYER_NAME}" \
-    --region "${region}" \
-    --max-items 1 \
-    --query "LayerVersions[0].Version") ||
-    _panic "Can't find ARN for the layer in ${region} region"
+  LATEST_VERSION=$(grep ${region} ${VERSIONS_FILE} | cut -f8 -d:)
 
   echo "The latest version: ${LATEST_VERSION}"
 
@@ -32,7 +29,7 @@ for region in ${REGIONS}; do
     --statement-id any-account \
     --principal "*" \
     --output text \
-    --region "${region}"
+    --region "${region}" \
     --no-cli-pager ||
     _panic "Can't set permission for ${LAYER_NAME}:${LATEST_VERSION}"
 done
