@@ -1,4 +1,5 @@
 version: 2.1
+
 commands:
   save_test_results:
     description: Collect and archive test results from `dir`.
@@ -11,8 +12,8 @@ commands:
           path: << parameters.dir >>
       - store_artifacts:
           path: << parameters.dir >>
-
   go_mod_download:
+    description: Download go modules required by the project
     steps:
       - restore_cache:
           key: v1-go-mod-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
@@ -30,24 +31,99 @@ commands:
           key: v1-go-mod-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
           paths:
             - /go/pkg/mod
+  persists_regions:
+    description: Persists supported regions to a workspace
+    steps:
+      - persist_to_workspace:
+          root: bin
+          paths:
+            - ./regions
+  restore_bin:
+    description: Restores the bin directory previously persisted in a workspace
+    steps:
+      - run: mkdir bin
+      - attach_workspace:
+          at: bin
+
+orbs:
+  aws-cli: circleci/aws-cli@1.4.0
 
 jobs:
-  build:
+  test:
     docker:
       - image: circleci/golang:1.15.5
-
-    working_directory: ~/repo
-
     steps:
       - checkout
-
       - go_mod_download
-
       - run:
           name: Run tests
           command: |
             mkdir ~/testresults
             (cd /tmp; GO111MODULE=on go get gotest.tools/gotestsum)
             CGO_ENABLED=0 gotestsum --format short-verbose --junitfile ~/testresults/unit.xml --raw-command -- go test --json -p 4 ./...
-
       - save_test_results
+  package:
+    docker:
+      - image: circleci/golang:1.15.5
+    steps:
+      - checkout
+      - go_mod_download
+      - run:
+          name: Package the Extension
+          command: make
+      - persist_to_workspace:
+          root: bin
+          paths:
+            - ./*.zip
+  publish_layer_version:
+    executor: aws-cli/default
+    steps:
+      - aws-cli/setup
+      - checkout
+      - restore_bin # restores the layer artefact persisted in a workspace
+      - run:
+          name: List supported regions
+          command: make supported-regions
+      - persists_regions
+      - run:
+          name: Publish layer version
+          command: make add-layer-version
+      - run:
+          name: List layer versions
+          command: |
+            mkdir ~/versions
+            make list-layer-versions | tee ~/versions/layers
+      - store_artifacts:
+          path: bin/regions
+      - store_artifacts:
+          path: ~/versions
+  make_layer_version_public:
+    executor: aws-cli/default
+    steps:
+      - aws-cli/setup
+      - checkout
+      - restore_bin # restores supported regions persisted in a workspace
+      - run:
+          name: Add global permission to layer version
+          command: make add-layer-version-permission
+
+workflows:
+  workflow:
+    jobs:
+      - test
+      - package
+      - publish_layer_version:
+          filters:
+            branches:
+              only: master
+          requires:
+            - test
+            - package
+      - confirm_making_public:
+          type: approval
+          requires:
+            - publish_layer_version
+      - make_layer_version_public:
+          requires:
+            - publish_layer_version
+            - confirm_making_public

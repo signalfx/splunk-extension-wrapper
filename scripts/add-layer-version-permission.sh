@@ -32,7 +32,8 @@ for region in ${REGIONS}; do
     --statement-id any-account \
     --principal "*" \
     --output text \
-    --region "${region}" ||
+    --region "${region}"
+    --no-cli-pager ||
     _panic "Can't set permission for ${LAYER_NAME}:${LATEST_VERSION}"
 done
 

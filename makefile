@@ -2,42 +2,66 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 
+BIN_DIR := bin
+REGIONS_PATH := $(BIN_DIR)/regions
+EXTENSIONS_DIR := $(BIN_DIR)/extensions
+
 PROFILE ?= integrations
-REGIONS ?= us-east-2 us-east-1 us-west-1 us-west-2 ap-south-1 ap-northeast-1 ap-northeast-2 ap-southeast-1 ap-southeast-2 ca-central-1 eu-central-1 eu-west-1 eu-west-2 eu-west-3 eu-north-1 sa-east-1
 LAYER_NAME ?= signalfx-extension-wrapper
 
 VERSION=`git log --format=format:%h -1`
 
 all: clean build package
 
+.PHONY: clean
 clean:
 	$(GOCLEAN)
-	rm -rf bin
+	rm -rf $(BIN_DIR)
 
+.PHONY: build
 build:
-	mkdir -p bin/extensions
-	GOOS=linux GOARCH=amd64 $(GOBUILD) -o bin/extensions -ldflags "-s -w -X main.gitVersion=$(VERSION)" ./cmd/signalfx-extension-wrapper/*.go
+	mkdir -p $(EXTENSIONS_DIR)
+	GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(EXTENSIONS_DIR) -ldflags "-s -w -X main.gitVersion=$(VERSION)" ./cmd/signalfx-extension-wrapper/*.go
 
+.PHONY: package
 package:
-	# this "magic" file enables access to Lambda-managed runtimes
-	# this is only required during preview access
-	touch bin/preview-extensions-ggqizro707
-	cd bin; zip -r extensions.zip * -x '**/*.zip'
+	cd $(BIN_DIR); zip -r extensions.zip * -x '**/*.zip'
 
-add-layer-version:
+
+$(REGIONS_PATH):
+	mkdir -p $(BIN_DIR)
+ifndef REGIONS
+	AWS_PROFILE="$(PROFILE)" aws ec2 describe-regions --query "Regions[].RegionName" --output text > $(REGIONS_PATH)
+else
+	echo $(REGIONS) > $(REGIONS_PATH)
+endif
+
+.PHONY: supported-regions
+supported-regions: $(REGIONS_PATH)
+	$(eval REGIONS ?= $(shell cat $(REGIONS_PATH)))
+
+.PHONY: ci-check
+ci-check:
+	$(if $(CI),,$(error you're not allowed to do that - set a CI variable if you know what you're doing))
+
+
+.PHONY: add-layer-version
+add-layer-version: ci-check supported-regions
 	PROFILE="$(PROFILE)" \
 	LAYER_NAME="$(LAYER_NAME)" \
-	ZIP_NAME="$(PWD)/bin/extensions.zip" \
+	ZIP_NAME="$(PWD)/$(BIN_DIR)/extensions.zip" \
 	REGIONS="$(REGIONS)" \
 		scripts/add-layer-version.sh
 
-add-layer-version-permission:
+.PHONY: add-layer-version-permission
+add-layer-version-permission: ci-check supported-regions
 	PROFILE="$(PROFILE)" \
 	LAYER_NAME="$(LAYER_NAME)" \
 	REGIONS="$(REGIONS)" \
 		scripts/add-layer-version-permission.sh
 
-list-layer-versions:
+.PHONY: list-layer-versions
+list-layer-versions: supported-regions
 	PROFILE="$(PROFILE)" \
 	LAYER_NAME="$(LAYER_NAME)" \
 	REGIONS="$(REGIONS)" \
