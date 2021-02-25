@@ -1,6 +1,6 @@
 # OVERVIEW
 
-The SignalFx Lambda Extension Layer provides customers with a simplified runtime-independent interface to collect high-resolution, low-latency metrics on Lambda Function execution. The Extension Layer tracks metrics for cold start, invocation count, function lifetime and termination condition enabling customers to efficiently and effectively monitor their Lambda Functions with minimal overhead.
+The SignalFx Lambda Extension Layer provides customers with a simplified runtime-independent interface to collect high-resolution, low-latency metrics on AWS Lambda Function execution. The Extension Layer tracks metrics for cold start, invocation count, function lifetime and termination condition enabling customers to efficiently and effectively monitor their Lambda Functions with minimal overhead.
 
 # METRICS
 
@@ -36,11 +36,11 @@ Supported variables:
 |Name|Default value|Accepted values|Description|
 |---|---|---|---|
 |INGEST|`https://ingest.signalfx.com/v2/datapoint`|`https://ingest.{REALM}.signalfx.com/v2/datapoint`|A metrics ingest endpoint as described [here](https://developers.signalfx.com/ingest_data_reference.html#tag/Send-Metrics).|
-|TOKEN| | |An access token as described [here](https://docs.signalfx.com/en/latest/admin-guide/tokens.html#access-tokens).|
-|REPORTING_RATE|`15`|An integer (seconds). Minimum value is 1s.|Specifies how often data points are sent to SignalFx. It could happen that data points are less dense than expected. A possible reason is that the extension does not report counters of 0 value (due to optimization).|  
-|REPORTING_TIMEOUT|`5`|An integer (seconds). Minimum value is 1s.|Specifies the time to fail datapoint requests if they don't succeed.|
-|VERBOSE|`false`|`true` or `false`|Enables verbose logging. Logs are stored in a CloudWatch Logs group associated with a Lambda function.|
-|HTTP_TRACING|`false`|`true` or `false`|Enables detailed logs on HTTP calls to SignalFx.|
+|TOKEN| | |Access token as described [here](https://docs.signalfx.com/en/latest/admin-guide/tokens.html#access-tokens).|
+|REPORTING_RATE|`15`|Integer (seconds). Minimum value is 1s.|Specifies how often data points are sent to Splunk Observability. The extension is optimized not to report counters of 0, which may cause longer reporting intervals than configured.  
+|REPORTING_TIMEOUT|`5`|Integer (seconds). Minimum value is 1s.|Specifies the time to fail datapoint requests if they don't succeed.|
+|VERBOSE|`false`|`true` or `false`|Enables verbose logging. Logs are stored in the CloudWatch Log group associated with the Lambda function.|
+|HTTP_TRACING|`false`|`true` or `false`|Enables detailed logs on HTTP calls to Splunk Observability.|
 
 # BUILDING
 
@@ -56,7 +56,7 @@ To deploy the layer as a new version:
 make add-layer-version PROFILE=integrations REGIONS=us-east-1 LAYER_NAME=signalfx-extension-wrapper
 ```
 
-To make a layer globally available to all AWS accounts (example for us-east-1 only):
+To make the layer globally available to all AWS regions (example for us-east-1 only):
 
 ```
 make add-layer-version-permission PROFILE=integrations REGIONS=us-east-1 LAYER_NAME=signalfx-extension-wrapper
@@ -67,7 +67,7 @@ Variables explanation:
 * REGIONS - a space-delimited list of regions where the layer will be published
 * LAYER_NAME - the name of the layer
 
-The published layer can be attached to any lambda function.
+The published layer can be attached to any AWS Lambda function, regardless of a runtime.
 
 
 ### Deploy to a specified set of regions (example)
@@ -80,7 +80,7 @@ PROFILE=rnd REGIONS="us-east-1 ap-northeast-1" CI=t make all add-layer-version a
 
 ### Overview
 
-This project is ready to run win CircleCI environment. 
+This project is ready to run with CircleCI environment. 
 The CircleCI workflow configured in [config.yml](.circleci/config.yml) consists of:
 * continuous integration capabilities (run on every branch)
     * unit test
@@ -92,8 +92,8 @@ The CircleCI workflow configured in [config.yml](.circleci/config.yml) consists 
         * create a lambda function (with the layer attached)
         * invoke the function a couple of times
         * remove the function
-        * verify that all the function invocations were registered in SignalFx
-    * make the published versions publicly available (this step is run only on the `master` branch, 
+        * using SignalFlow client, verify that Splunk Observability backend received all expected datapoints
+    * make the published versions publicly available (this step runs only on the `master` branch, 
       and it has to be manually approved)
     
 ### Set up
