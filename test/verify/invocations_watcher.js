@@ -20,13 +20,13 @@ const options = {
 
 const client = new signalfx.SignalFlow(process.env.FUNCTION_TOKEN, options);
 
-const threshold = process.env.RESULT_WATCH_THRESHOLD || 10;
-const timeout = process.env.RESULT_WATCH_TIMEOUT || 60000;
+const expectedInvocationCount = process.env.EXPECTED_INVOCATION_COUNT || 10;
+const timeout = process.env.TEST_VERIFICATION_TIMEOUT || 60000;
 
 console.log('executing program:', program);
 
 const handle = client.execute({
-  program: program.split('\n').join('').trim(),
+  program: program,
   stop: Date.now() + timeout,
   resolution: 1000,
   immediate: false
@@ -49,11 +49,10 @@ handle.stream((err, data) => {
   console.log(data);
 
   if (data.type === 'data') {
-
     data.data
-    .filter(dp => dp.value >= threshold)
+    .filter(dp => dp.value >= expectedInvocationCount)
     .forEach(dp => {
-      console.log("found point that reached the threshold", dp);
+      console.log("the threshold has been reached", dp);
 
       handle.close();
       process.exit(0);

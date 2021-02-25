@@ -102,4 +102,10 @@ run-test: $(TEST_DIR)/add-test-function.json $(TEST_DIR)/delete-test-function.js
 
 .PHONY: verify-test
 verify-test:
-	cd test/verify; npm i; FUNCTION_NAME="$(FUNCTION_NAME)" node invocations_watcher.js
+	cd test/verify; npm i; \
+		FUNCTION_NAME="$(FUNCTION_NAME)" \
+		FUNCTION_REALM="$(FUNCTION_REALM)" \
+		FUNCTION_TOKEN="$(FUNCTION_TOKEN)" \
+		EXPECTED_INVOCATION_COUNT="$(EXPECTED_INVOCATION_COUNT)" \
+		TEST_VERIFICATION_TIMEOUT="$(TEST_VERIFICATION_TIMEOUT)" \
+		node invocations_watcher.js

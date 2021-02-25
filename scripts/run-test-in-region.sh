@@ -15,6 +15,9 @@ echo "Function name: ${FUNCTION_NAME}"
 
 export AWS_PROFILE=$PROFILE AWS_DEFAULT_REGION=$REGION
 
+echo "Sending request to create a function"
+cat bin/test/add-test-function.json
+
 aws lambda create-function \
   --cli-input-json file://bin/test/add-test-function.json \
   --no-cli-pager ||
@@ -32,6 +35,9 @@ for i in {1..10}; do
     ${response_file} ||
       _panic "Can't invoke the function: $(cat ${response_file})"
 done
+
+echo "Sending request to delete the function"
+cat bin/test/delete-test-function.json
 
 aws lambda delete-function \
   --cli-input-json file://bin/test/delete-test-function.json \
