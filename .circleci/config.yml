@@ -31,13 +31,20 @@ commands:
           key: v1-go-mod-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
           paths:
             - /go/pkg/mod
-  persists_regions:
+  persist_regions:
     description: Persists supported regions to a workspace
     steps:
       - persist_to_workspace:
           root: bin
           paths:
             - ./regions
+  persist_versions:
+    description: Persists supported regions to a workspace
+    steps:
+      - persist_to_workspace:
+          root: bin
+          paths:
+            - ./versions
   restore_bin:
     description: Restores the bin directory previously persisted in a workspace
     steps:
@@ -84,25 +91,42 @@ jobs:
       - run:
           name: List supported regions
           command: make supported-regions
-      - persists_regions
+      - persist_regions
       - run:
           name: Publish layer version
           command: make add-layer-version
-      - run:
-          name: List layer versions
-          command: |
-            mkdir ~/versions
-            make list-layer-versions | tee ~/versions/layers
       - store_artifacts:
           path: bin/regions
       - store_artifacts:
-          path: ~/versions
+          path: bin/versions
+      - persist_versions
+  run_test:
+    executor: aws-cli/default
+    parameters:
+      region:
+        type: string
+    steps:
+      - aws-cli/setup
+      - checkout
+      - restore_bin # restores the file with layers versions
+      - run:
+          name: Run tests
+          command: make run-test REGION=<< parameters.region >>
+  verify_test_results:
+    docker:
+      - image: cimg/node:15.10.0
+    steps:
+      - checkout
+      - run:
+          name: Verify test results
+          command: make verify-test EXPECTED_INVOCATION_COUNT=50
+          no_output_timeout: 1m
   make_layer_version_public:
     executor: aws-cli/default
     steps:
       - aws-cli/setup
       - checkout
-      - restore_bin # restores supported regions persisted in a workspace
+      - restore_bin # restores supported regions and layer versions persisted in a workspace
       - run:
           name: Add global permission to layer version
           command: make add-layer-version-permission
@@ -115,15 +139,28 @@ workflows:
       - publish_layer_version:
           filters:
             branches:
-              only: master
+              only:
+                - master
+                - /pipeline-.*/
           requires:
             - test
             - package
+      - run_test:
+          matrix:
+            parameters:
+              region: ["us-east-1", "eu-central-1", "af-south-1", "us-west-2", "ap-northeast-2"]
+          requires:
+            - publish_layer_version
+      - verify_test_results:
+          requires:
+            - run_test
       - confirm_making_public:
+          filters:
+            branches:
+              only: master
           type: approval
           requires:
-            - publish_layer_version
+              - verify_test_results
       - make_layer_version_public:
           requires:
-            - publish_layer_version
             - confirm_making_public

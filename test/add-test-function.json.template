@@ -1,0 +1,20 @@
+{
+  "FunctionName": "${FUNCTION_NAME}",
+  "Runtime": "nodejs12.x",
+  "Handler": "index.handler",
+  "Role": "arn:aws:iam::906383545488:role/signalfx-extension-wrapper-testing",
+  "Code": {
+    "ZipFile": "${FUNCTION_ZIP}"
+  },
+  "Environment": {
+    "Variables": {
+      "INGEST": "https://ingest.${FUNCTION_REALM}.signalfx.com/v2/datapoint",
+      "TOKEN": "${FUNCTION_TOKEN}",
+      "REPORTING_RATE": "1",
+      "VERBOSE": "true"
+    }
+  },
+  "Layers": [
+    "${FUNCTION_LAYER}"
+  ]
+}
