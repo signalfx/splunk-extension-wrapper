@@ -57,37 +57,102 @@ The CircleCI workflow configured in [config.yml](.circleci/config.yml) consists 
 While the CI part can work right out of the box, the CD part requires a few setup steps.
 This includes:
 
-* Create an AWS user account with at least minimal set of privileges
-    * EC2
-        * describe regions
-    * Lambda
-        * publish a layer version
-        * add permission to a layer version
-        * create a function
-        * invoke a function
-        * delete a function
-
-* Create a basic role for a function
-    ```
-    {
-      "Version": "2012-10-17",
-      "Statement": [
+* For releasing
+    * Create an AWS account which will be used for layer publishing.
+      It must have the following permissions:
+        ```json
         {
-          "Effect": "Allow",
-          "Principal": {
-            "Service": "lambda.amazonaws.com"
-          },
-          "Action": "sts:AssumeRole"
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": "ec2:DescribeRegions",
+                    "Resource": "*"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "lambda:PublishLayerVersion"
+                    ],
+                    "Resource": "arn:aws:lambda:*:<account_number>:layer:signalfx-extension-wrapper"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "lambda:AddLayerVersionPermission"
+                    ],
+                    "Resource": "arn:aws:lambda:*:<account_number>:layer:signalfx-extension-wrapper:*"
+                }
+            ]
         }
-      ]
-    }
-    ```
+        ```
+
+    * Note: publishing user and testing user are not separated yet, for now add 
+      the above permissions for the testing user that will be set up in the next step.
+
+* End-to-end testing
+    * Create a basic role for a function (call it `signalfx-extension-wrapper-testing`)
+        ```json
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+        ```
+      
+    * Create an AWS account which will be used for testing. 
+      It must have the following permissions:
+        ```json
+        {
+          "Version" : "2012-10-17",
+          "Statement" : [
+            {
+              "Effect" : "Allow",
+              "Action" : [
+                "lambda:CreateFunction",
+                "lambda:InvokeFunction",
+                "lambda:DeleteFunction"
+              ],
+              "Resource" : "arn:aws:lambda:*:<account_number>:function:singalfx-extension-wrapper-test-function"
+            },
+            {
+              "Effect" : "Allow",
+              "Action" : [
+                "lambda:GetLayerVersion"
+              ],
+              "Resource" : "arn:aws:lambda:*:<account_number>:layer:signalfx-extension-wrapper:*"
+            },
+            {
+              "Effect" : "Allow",
+              "Action" : [
+                "iam:PassRole"
+              ],
+              "Resource" : "arn:aws:iam::<account_number>:role/signalfx-extension-wrapper-testing"
+            }
+          ]
+        }
+        ```
+      
+    * Set up a CircleCI context called `aws-integrations-lambda-extension-user`.
+      Set there the following environment variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, 
+      `AWS_DEFAULT_REGION`, so they point to the account setup in the previous step.
+      
+    * Set up a CircleCI context called `eu0-integrations-ingest`.
+      Set there the following environment variables: `INGEST_REALM`, `INGEST_TOKEN`,
+      so they point to a Splunk ingest.
 
 * Environment variables
     * Required
-        * AWS_ACCESS_KEY_ID - the id of the access key for the AWS account where the layer will be tested and published
-        * AWS_SECRET_ACCESS_KEY - the secret for the access key (the one defined above)
-        * AWS_DEFAULT_REGION - actually it doesn't matter which region, but it is required
-        * FUNCTION_REALM - realm to which data points will be published (testing)
-        * FUNCTION_TOKEN - access token of an organization to which data points will be published (testing)
-        * PROFILE - should be set to 'default'
+        * `AWS_ACCESS_KEY_ID` - the id of the access key for the AWS account where the layer will be tested and published
+        * `AWS_SECRET_ACCESS_KEY` - the secret for the access key (the one defined above)
+        * `AWS_DEFAULT_REGION` - actually it doesn't matter which region, but it is required
+        * `INGEST_REALM` - realm to which data points will be published (testing)
+        * `INGEST_TOKEN` - access token of an organization to which data points will be published (testing)
+        * `PROFILE` - should be set to 'default'

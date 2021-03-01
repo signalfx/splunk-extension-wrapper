@@ -90,7 +90,7 @@ $(TEST_DIR)/%.json: test/%.json.template $(FUNCTION_PATH)
 		FUNCTION_LAYER="$(shell grep $(REGION) $(VERSIONS_FILE))" \
 		FUNCTION_NAME="$(FUNCTION_NAME)" \
 		FUNCTION_INGEST="$(FUNCTION_INGEST)" \
-		FUNCTION_TOKEN="$(FUNCTION_TOKEN)" \
+		INGEST_TOKEN="$(INGEST_TOKEN)" \
 		envsubst > $@
 
 .PHONY: run-test
@@ -104,8 +104,8 @@ run-test: $(TEST_DIR)/add-test-function.json $(TEST_DIR)/delete-test-function.js
 verify-test:
 	cd test/verify; npm i; \
 		FUNCTION_NAME="$(FUNCTION_NAME)" \
-		FUNCTION_REALM="$(FUNCTION_REALM)" \
-		FUNCTION_TOKEN="$(FUNCTION_TOKEN)" \
+		INGEST_REALM="$(INGEST_REALM)" \
+		INGEST_TOKEN="$(INGEST_TOKEN)" \
 		EXPECTED_INVOCATION_COUNT="$(EXPECTED_INVOCATION_COUNT)" \
 		TEST_VERIFICATION_TIMEOUT="$(TEST_VERIFICATION_TIMEOUT)" \
 		node invocations_watcher.js

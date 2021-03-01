@@ -8,8 +8,8 @@
   },
   "Environment": {
     "Variables": {
-      "INGEST": "https://ingest.${FUNCTION_REALM}.signalfx.com/v2/datapoint",
-      "TOKEN": "${FUNCTION_TOKEN}",
+      "INGEST": "https://ingest.${INGEST_REALM}.signalfx.com/v2/datapoint",
+      "TOKEN": "${INGEST_TOKEN}",
       "REPORTING_RATE": "1",
       "VERBOSE": "true"
     }
