@@ -13,16 +13,18 @@ function _panic() {
 
 DESCRIPTION="The SignalFx Lambda Extension Layer provides customers with a simplified runtime-independent interface to collect high-resolution, low-latency metrics on Lambda Function execution."
 
-echo "Adding '${LAYER_NAME}' layer versions..."
+echo "Adding '${LAYER_NAME}' layer version..."
 echo "AWS profile: ${PROFILE}"
 echo "Zip file: ${ZIP_NAME}"
 echo "Regions: ${REGIONS}"
 echo "Versions file: ${VERSIONS_FILE})"
 
+export AWS_PROFILE=$PROFILE
+
 for region in ${REGIONS}; do
   echo "Adding the layer in ${region} region..."
 
-  AWS_PROFILE=$PROFILE aws lambda publish-layer-version \
+  aws lambda publish-layer-version \
     --layer-name "${LAYER_NAME}" \
     --description "${DESCRIPTION}" \
     --license-info "Apache-2.0" \

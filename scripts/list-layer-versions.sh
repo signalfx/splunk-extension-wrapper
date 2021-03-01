@@ -13,8 +13,10 @@ echo "Listing layer '${LAYER_NAME}' versions..."
 echo "AWS profile: ${PROFILE}"
 echo "Regions:  ${REGIONS}"
 
+export AWS_PROFILE=$PROFILE
+
 for region in ${REGIONS}; do
-  LATEST_VERSION=$(AWS_PROFILE=$PROFILE aws lambda list-layer-versions \
+  LATEST_VERSION=$(aws lambda list-layer-versions \
     --layer-name "${LAYER_NAME}" \
     --region "${region}" \
     --max-items 1 \

@@ -41,8 +41,8 @@ The CircleCI workflow configured in [config.yml](.circleci/config.yml) consists 
 * continuous integration capabilities (run on every branch)
     * unit test
     * package the extension as a Lambda Layer (an artifact deployable to AWS Lambda)
-* continuous delivery capabilities (run on the `master` branch
-  and other branches with the `pipeline-` prefix)
+* continuous delivery capabilities (run on the `master` branch;
+   branches with the `pipeline-` prefix run e2e tests)
     * publish a new version of the layer to all available regions
     * test the layer in the selected set of regions
         * create a lambda function (with the layer attached)
@@ -111,35 +111,41 @@ This includes:
       It must have the following permissions:
         ```json
         {
-          "Version" : "2012-10-17",
-          "Statement" : [
-            {
-              "Effect" : "Allow",
-              "Action" : [
-                "lambda:CreateFunction",
-                "lambda:InvokeFunction",
-                "lambda:DeleteFunction"
-              ],
-              "Resource" : "arn:aws:lambda:*:<account_number>:function:singalfx-extension-wrapper-test-function"
-            },
-            {
-              "Effect" : "Allow",
-              "Action" : [
-                "lambda:GetLayerVersion"
-              ],
-              "Resource" : "arn:aws:lambda:*:<account_number>:layer:signalfx-extension-wrapper:*"
-            },
-            {
-              "Effect" : "Allow",
-              "Action" : [
-                "iam:PassRole"
-              ],
-              "Resource" : "arn:aws:iam::<account_number>:role/signalfx-extension-wrapper-testing"
-            }
-          ]
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "lambda:CreateFunction",
+                        "lambda:InvokeFunction",
+                        "lambda:DeleteFunction"
+                    ],
+                    "Resource": "arn:aws:lambda:*:<account_number>:function:singalfx-extension-wrapper-test-function"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "lambda:PublishLayerVersion",
+                        "lambda:GetLayerVersion",
+                        "lambda:AddLayerVersionPermission",
+                        "lambda:DeleteLayerVersion"
+                    ],
+                    "Resource": [
+                        "arn:aws:lambda:*:<account_number>:layer:signalfx-extension-wrapper-test",
+                        "arn:aws:lambda:*:<account_number>:layer:signalfx-extension-wrapper-test:*"
+                    ]
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "iam:PassRole"
+                    ],
+                    "Resource": "arn:aws:iam::<account_number>:role/signalfx-extension-wrapper-testing"
+                }
+            ]
         }
         ```
-      
+
     * Set up a CircleCI context called `aws-integrations-lambda-extension-user`.
       Set there the following environment variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, 
       `AWS_DEFAULT_REGION`, so they point to the account setup in the previous step.

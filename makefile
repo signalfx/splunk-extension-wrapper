@@ -62,6 +62,14 @@ add-layer-version: ci-check supported-regions
 	VERSIONS_FILE="$(VERSIONS_FILE)" \
 		scripts/add-layer-version.sh
 
+.PHONY: delete-layer-version
+delete-layer-version: ci-check supported-regions
+	PROFILE="$(PROFILE)" \
+	LAYER_NAME="$(LAYER_NAME)" \
+	REGIONS="$(REGIONS)" \
+	VERSIONS_FILE="$(VERSIONS_FILE)" \
+		scripts/delete-layer-version.sh
+
 .PHONY: add-layer-version-permission
 add-layer-version-permission: ci-check supported-regions
 	PROFILE="$(PROFILE)" \

@@ -15,6 +15,8 @@ echo "AWS profile: ${PROFILE}"
 echo "Regions: ${REGIONS}"
 echo "Versions file: ${VERSIONS_FILE}"
 
+export AWS_PROFILE=$PROFILE
+
 for region in ${REGIONS}; do
   echo "Making the layer available publicly in ${region} region..."
 
@@ -22,7 +24,7 @@ for region in ${REGIONS}; do
 
   echo "The latest version: ${LATEST_VERSION}"
 
-  AWS_PROFILE=$PROFILE aws lambda add-layer-version-permission \
+  aws lambda add-layer-version-permission \
     --layer-name "${LAYER_NAME}" \
     --version-number "${LATEST_VERSION}" \
     --action lambda:GetLayerVersion \
