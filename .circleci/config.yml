@@ -31,20 +31,6 @@ commands:
           key: v1-go-mod-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
           paths:
             - /go/pkg/mod
-  persist_regions:
-    description: Persists supported regions to a workspace
-    steps:
-      - persist_to_workspace:
-          root: bin
-          paths:
-            - ./regions
-  persist_versions:
-    description: Persists supported regions to a workspace
-    steps:
-      - persist_to_workspace:
-          root: bin
-          paths:
-            - ./versions
   restore_bin:
     description: Restores the bin directory previously persisted in a workspace
     steps:
@@ -91,7 +77,6 @@ jobs:
       - run:
           name: List supported regions
           command: make supported-regions
-      - persist_regions
       - run:
           name: Publish layer version
           command: make add-layer-version
@@ -99,7 +84,9 @@ jobs:
           path: bin/regions
       - store_artifacts:
           path: bin/versions
-      - persist_versions
+      - run:
+          name: Add global permission to layer version
+          command: make add-layer-version-permission
   run_test:
     executor: aws-cli/default
     parameters:
@@ -108,10 +95,20 @@ jobs:
     steps:
       - aws-cli/setup
       - checkout
-      - restore_bin # restores the file with layers versions
+      - restore_bin # restores the layer artefact persisted in a workspace
+      - run:
+          name: Add layer version
+          command: |
+            make add-layer-version \
+              REGIONS=<< parameters.region >> LAYER_NAME=signalfx-extension-wrapper-test
       - run:
           name: Run tests
           command: make run-test REGION=<< parameters.region >>
+      - run:
+          name: Delete layer version
+          command: |
+            make delete-layer-version \
+              REGIONS=<< parameters.region >> LAYER_NAME=signalfx-extension-wrapper-test
   verify_test_results:
     docker:
       - image: cimg/node:15.10.0
@@ -119,39 +116,31 @@ jobs:
       - checkout
       - run:
           name: Verify test results
-          command: make verify-test EXPECTED_INVOCATION_COUNT=50
+          command: make verify-test EXPECTED_INVOCATION_COUNT=20
           no_output_timeout: 1m
-  make_layer_version_public:
-    executor: aws-cli/default
-    steps:
-      - aws-cli/setup
-      - checkout
-      - restore_bin # restores supported regions and layer versions persisted in a workspace
-      - run:
-          name: Add global permission to layer version
-          command: make add-layer-version-permission
 
 workflows:
   workflow:
     jobs:
       - test
       - package
-      - publish_layer_version:
+      - run_test:
           filters:
             branches:
               only:
                 - master
                 - /pipeline-.*/
-          requires:
-            - test
-            - package
-      - run_test:
+          context:
+            - aws-integrations-lambda-extension-user
+            - eu0-integrations-ingest
           matrix:
             parameters:
               region: ["us-east-1", "eu-central-1", "af-south-1", "us-west-2", "ap-northeast-2"]
           requires:
-            - publish_layer_version
+            - test
+            - package
       - verify_test_results:
+          context: eu0-integrations-ingest
           requires:
             - run_test
       - confirm_making_public:
@@ -161,6 +150,7 @@ workflows:
           type: approval
           requires:
               - verify_test_results
-      - make_layer_version_public:
+      - publish_layer_version:
+          context: aws-rnd-lambda-extension-user
           requires:
             - confirm_making_public

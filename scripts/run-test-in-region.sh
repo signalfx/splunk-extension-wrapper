@@ -25,7 +25,7 @@ aws lambda create-function \
 
 response_file=$(mktemp)
 
-for i in {1..10}; do
+for i in {1..5}; do
   echo "Calling the function ${i} time"
 
   aws lambda invoke \
