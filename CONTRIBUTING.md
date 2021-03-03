@@ -2,19 +2,19 @@
 
 To build and package extension to a zip file:
 
-```
+```shell
 make
 ```
 
 To deploy the layer as a new version:
 
-```
+```shell
 make add-layer-version PROFILE=integrations REGIONS=us-east-1 LAYER_NAME=signalfx-extension-wrapper CI=t
 ```
 
 To make the layer globally available (example for us-east-1 only):
 
-```
+```shell
 make add-layer-version-permission PROFILE=integrations REGIONS=us-east-1 LAYER_NAME=signalfx-extension-wrapper CI=t
 ```
 
@@ -28,9 +28,44 @@ The published layer can be attached to any AWS Lambda function, regardless of a 
 
 ### Deploy to a specified set of regions (example)
 
-```
+```shell
 make all add-layer-version add-layer-version-permission PROFILE=rnd REGIONS="us-east-1 ap-northeast-1" CI=t
 ```
+
+# Local e2e tests
+
+You can run e2e test from your machine. It is steered by an input file ([example](test/local_test_example.txt)).
+It'll:
+* publish a version of the layer you're currently working on in all regions you need
+* create/invoke/delete functions as many times as is described in the input file
+* remove the layer version created by the test
+
+Make sure you have the prerequisites:
+
+```shell
+make; make prepare-test-function
+```
+
+Now you can run a test:
+
+```shell
+PROFILE=integrations \ 
+INGEST_REALM=eu0 \
+INGEST_TOKEN=*** \
+scripts/run-local-test.sh test/local_test_example.txt 
+```
+
+Required environment variables:
+* `PROFILE` - determines which AWS account the functions will be created under
+* `INGEST_REALM`, `INGEST_TOKEN` - defines the organization where the functions will publish data points
+
+### Input file
+
+The input file is a CSV like file. Meaning of the columns starting from the left:
+* function name (doesn't have to be unique)
+* region in which the function will be created
+* how many times the function should be invoked
+* delay between function calls
 
 # CircleCI
 
