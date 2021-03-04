@@ -120,7 +120,10 @@ This includes:
                         "lambda:InvokeFunction",
                         "lambda:DeleteFunction"
                     ],
-                    "Resource": "arn:aws:lambda:*:<account_number>:function:singalfx-extension-wrapper-test-function"
+                    "Resource": [
+                        "arn:aws:lambda:*:<account_number>:function:singalfx-extension-wrapper-test-function",
+                        "arn:aws:lambda:*:<account_number>:function:singalfx-extension-wrapper-test-fast-invoke-function"
+                    ]
                 },
                 {
                     "Effect": "Allow",

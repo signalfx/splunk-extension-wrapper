@@ -1,6 +1,9 @@
 package util
 
-import "time"
+import (
+	"github.com/splunk/lambda-extension/internal/config"
+	"time"
+)
 
 type Ticker interface {
 	Tick() bool
@@ -18,15 +21,24 @@ type lossyTicker struct {
 	clock     clock
 }
 
-func NewTicker(interval time.Duration) Ticker {
-	return newTicker(interval, systemClock{})
+type ticksAlways struct{}
+
+func NewTicker(config config.Configuration) Ticker {
+	if config.FastIngest {
+		return &ticksAlways{}
+	}
+	return newIntervalTicker(config.ReportingDelay, systemClock{})
 }
 
-func newTicker(interval time.Duration, clock clock) Ticker {
+func newIntervalTicker(interval time.Duration, clock clock) Ticker {
 	return &lossyTicker{
 		interval: interval,
 		clock:    clock,
 	}
+}
+
+func (ticker ticksAlways) Tick() bool {
+	return true
 }
 
 func (ticker *lossyTicker) Tick() bool {

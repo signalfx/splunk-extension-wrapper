@@ -13,10 +13,10 @@ func (fc fakeClock) now() time.Time {
 	return fakeNow
 }
 
-func TestTicker(t *testing.T) {
+func TestIntervalTicker(t *testing.T) {
 	fakeNow = time.Now()
 
-	ticker := newTicker(15*time.Second, fakeClock{})
+	ticker := newIntervalTicker(15*time.Second, fakeClock{})
 
 	if !ticker.Tick() {
 		t.Error("it was expected to tick")
@@ -36,5 +36,15 @@ func TestTicker(t *testing.T) {
 
 	if !ticker.Tick() {
 		t.Errorf("it was expected to tick once again")
+	}
+}
+
+func TestTickAlways(t *testing.T) {
+	ticker := &ticksAlways{}
+
+	for i := 0; i < 10; i++ {
+		if !ticker.Tick() {
+			t.Errorf("didn't tick")
+		}
 	}
 }

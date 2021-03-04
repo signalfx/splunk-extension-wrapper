@@ -11,6 +11,7 @@ import (
 
 const defaultIngestURL = "https://ingest.signalfx.com/v2/datapoint"
 const defaultToken = ""
+const defaultFastIngest = true
 const defaultReportingDuration = time.Duration(15) * time.Second
 const defaultReportingTimeout = time.Duration(5) * time.Second
 const defaultVerbose = false
@@ -20,6 +21,7 @@ const minTokenLength = 10 // SFx Access Tokens are 22 chars long in 2019 but acc
 
 const ingestURLEnv = "INGEST"
 const tokenEnv = "TOKEN"
+const fastIngestEnv = "FAST_INGEST"
 const reportingDelayEnv = "REPORTING_RATE"
 const reportingTimeoutEnv = "REPORTING_TIMEOUT"
 const verboseEnv = "VERBOSE"
@@ -28,6 +30,7 @@ const httpTracingEnv = "HTTP_TRACING"
 type Configuration struct {
 	IngestURL        string
 	Token            string
+	FastIngest       bool
 	ReportingDelay   time.Duration
 	ReportingTimeout time.Duration
 	Verbose          bool
@@ -38,6 +41,7 @@ func New() Configuration {
 	return Configuration{
 		IngestURL:        strOrDefault(ingestURLEnv, defaultIngestURL),
 		Token:            strOrDefault(tokenEnv, defaultToken),
+		FastIngest:       boolOrDefault(fastIngestEnv, defaultFastIngest),
 		ReportingDelay:   durationOrDefault(reportingDelayEnv, defaultReportingDuration),
 		ReportingTimeout: durationOrDefault(reportingTimeoutEnv, defaultReportingTimeout),
 		Verbose:          boolOrDefault(verboseEnv, defaultVerbose),
@@ -51,6 +55,7 @@ func (c Configuration) String() string {
 
 	addLine("Ingest URL        = %v", c.IngestURL)
 	addLine("Token             = %v", obfuscatedToken(c.Token))
+	addLine("Fast Ingest       = %v", c.FastIngest)
 	addLine("Reporting Delay   = %v", c.ReportingDelay.Seconds())
 	addLine("Reporting Timeout = %v", c.ReportingTimeout.Seconds())
 	addLine("Verbose           = %v", c.Verbose)
