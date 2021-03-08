@@ -164,19 +164,19 @@ workflows:
           matrix:
             alias: run_fast_invoke_test
             parameters:
-              region: ["us-west-2", "ap-northeast-2", "eu-south-1"]
+              region: ["us-west-2", "ap-northeast-2", "eu-south-1", "ap-northeast-3"]
           requires:
             - test
             - package
       - verify_test_results:
-          expected_invocation_count: 12
+          expected_invocation_count: 12 # 3 regions, 5 invocations in each (and we ignore last point because it might be delayed)
           function_name: singalfx-extension-wrapper-test-function
           context: eu0-integrations-ingest
           requires:
             - run_test
       - verify_test_results:
           name: verify_fast_invoke_test_results
-          expected_invocation_count: 10
+          expected_invocation_count: 20 # 4 regions, 5 invocations in each
           function_name: singalfx-extension-wrapper-test-fast-invoke-function
           context: eu0-integrations-ingest
           requires:
