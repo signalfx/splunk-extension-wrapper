@@ -122,7 +122,7 @@ This includes:
                     ],
                     "Resource": [
                         "arn:aws:lambda:*:<account_number>:function:singalfx-extension-wrapper-test-function",
-                        "arn:aws:lambda:*:<account_number>:function:singalfx-extension-wrapper-test-fast-invoke-function"
+                        "arn:aws:lambda:*:<account_number>:function:singalfx-extension-wrapper-test-fast-ingest-function"
                     ]
                 },
                 {
