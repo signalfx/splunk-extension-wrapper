@@ -152,7 +152,7 @@ workflows:
             - test
             - package
       - run_test:
-          function_name: singalfx-extension-wrapper-test-fast-invoke-function
+          function_name: singalfx-extension-wrapper-test-fast-ingest-function
           filters:
             branches:
               only:
@@ -162,7 +162,7 @@ workflows:
             - aws-integrations-lambda-extension-user
             - eu0-integrations-ingest
           matrix:
-            alias: run_fast_invoke_test
+            alias: run_fast_ingest_test
             parameters:
               region: ["us-west-2", "ap-northeast-2", "eu-south-1", "ap-northeast-3"]
           requires:
@@ -175,12 +175,12 @@ workflows:
           requires:
             - run_test
       - verify_test_results:
-          name: verify_fast_invoke_test_results
+          name: verify_fast_ingest_test_results
           expected_invocation_count: 20 # 4 regions, 5 invocations in each
-          function_name: singalfx-extension-wrapper-test-fast-invoke-function
+          function_name: singalfx-extension-wrapper-test-fast-ingest-function
           context: eu0-integrations-ingest
           requires:
-            - run_fast_invoke_test
+            - run_fast_ingest_test
       - confirm_making_public:
           filters:
             branches:
@@ -188,7 +188,7 @@ workflows:
           type: approval
           requires:
               - verify_test_results
-              - verify_fast_invoke_test_results
+              - verify_fast_ingest_test_results
       - publish_layer_version:
           context: aws-rnd-lambda-extension-user
           requires:
