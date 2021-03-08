@@ -165,3 +165,16 @@ This includes:
         * `INGEST_REALM` - realm to which data points will be published (testing)
         * `INGEST_TOKEN` - access token of an organization to which data points will be published (testing)
         * `PROFILE` - should be set to 'default'
+
+
+# Release
+
+After a change is merged to the `master` branch and e2e test will succeed, you'll get a chance to confirm or cancel a job that publishes the artifacts.
+If you decide to proceed with the release, go to the appropriate workflow and approve the `confirm_making_public` job.
+This will publish a new version of the layer in each region and will grant every AWS account access to each of the newly published versions.
+
+You can also cancel a workflow instead of approving the `confirm_making_public` job, so not every commit merged to the `master` branch has to be released.
+
+The CD pipeline doesn't publish arns of the new versions to [the version repo](https://github.com/signalfx/lambda-layer-versions/tree/master/lambda-extension),
+so this step must be done manually.
+You can find the list of the newly published versions in the `publish_layer_versions` job in CricleCI (look for the `bin/versions` file in the `ARTIFACTS` tab of the job).
