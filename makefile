@@ -17,6 +17,8 @@ FUNCTION_NAME := singalfx-extension-wrapper-test-function
 PROFILE ?= integrations
 LAYER_NAME ?= signalfx-extension-wrapper
 
+FAST_INGEST ?= false
+
 VERSION=`git log --format=format:%h -1`
 
 all: clean build package
@@ -91,7 +93,9 @@ $(FUNCTION_PATH): test/function/index.js
 
 	cd test/function; zip -r $(FUNCTION_PATH) index.js
 
-$(TEST_DIR)/%.json: test/%.json.template $(FUNCTION_PATH)
+request_files = $(patsubst test/%.json.template,$(TEST_DIR)/%.json,$(wildcard test/*.json.template))
+
+$(request_files): $(TEST_DIR)/%.json: test/%.json.template $(FUNCTION_PATH)
 	mkdir -p $(TEST_DIR)
 	cat $< | \
 		FUNCTION_ZIP="$(shell base64 -i $(FUNCTION_PATH))" \
@@ -99,10 +103,11 @@ $(TEST_DIR)/%.json: test/%.json.template $(FUNCTION_PATH)
 		FUNCTION_NAME="$(FUNCTION_NAME)" \
 		FUNCTION_INGEST="$(FUNCTION_INGEST)" \
 		INGEST_TOKEN="$(INGEST_TOKEN)" \
+		FAST_INGEST="$(FAST_INGEST)" \
 		envsubst > $@
 
 .PHONY: run-test
-run-test: $(TEST_DIR)/add-test-function.json $(TEST_DIR)/delete-test-function.json
+run-test: $(request_files)
 	PROFILE="$(PROFILE)" \
 	REGION="$(REGION)" \
 	FUNCTION_NAME="$(FUNCTION_NAME)" \

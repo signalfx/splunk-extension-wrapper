@@ -92,6 +92,8 @@ jobs:
     parameters:
       region:
         type: string
+      function_name:
+        type: string
     steps:
       - aws-cli/setup
       - checkout
@@ -103,20 +105,28 @@ jobs:
               REGIONS=<< parameters.region >> LAYER_NAME=signalfx-extension-wrapper-test
       - run:
           name: Run tests
-          command: make run-test REGION=<< parameters.region >>
+          command: make run-test REGION=<< parameters.region >> \
+            FUNCTION_NAME=<< parameters.function_name >>
       - run:
           name: Delete layer version
           command: |
             make delete-layer-version \
               REGIONS=<< parameters.region >> LAYER_NAME=signalfx-extension-wrapper-test
   verify_test_results:
+    parameters:
+      expected_invocation_count:
+        type: integer
+      function_name:
+        type: string
     docker:
       - image: cimg/node:15.10.0
     steps:
       - checkout
       - run:
           name: Verify test results
-          command: make verify-test EXPECTED_INVOCATION_COUNT=20
+          command: make verify-test \
+            EXPECTED_INVOCATION_COUNT=<< parameters.expected_invocation_count >> \
+            FUNCTION_NAME=<< parameters.function_name >>
           no_output_timeout: 1m
 
 workflows:
@@ -125,6 +135,7 @@ workflows:
       - test
       - package
       - run_test:
+          function_name: singalfx-extension-wrapper-test-function
           filters:
             branches:
               only:
@@ -134,15 +145,42 @@ workflows:
             - aws-integrations-lambda-extension-user
             - eu0-integrations-ingest
           matrix:
+            alias: run_test
             parameters:
-              region: ["us-east-1", "eu-central-1", "af-south-1", "us-west-2", "ap-northeast-2"]
+              region: ["us-east-1", "eu-central-1", "af-south-1"]
+          requires:
+            - test
+            - package
+      - run_test:
+          function_name: singalfx-extension-wrapper-test-fast-ingest-function
+          filters:
+            branches:
+              only:
+              - master
+              - /pipeline-.*/
+          context:
+            - aws-integrations-lambda-extension-user
+            - eu0-integrations-ingest
+          matrix:
+            alias: run_fast_ingest_test
+            parameters:
+              region: ["us-west-2", "ap-northeast-2", "eu-south-1", "ap-northeast-3"]
           requires:
             - test
             - package
       - verify_test_results:
+          expected_invocation_count: 12 # 3 regions, 5 invocations in each (and we ignore last point because it might be delayed)
+          function_name: singalfx-extension-wrapper-test-function
           context: eu0-integrations-ingest
           requires:
             - run_test
+      - verify_test_results:
+          name: verify_fast_ingest_test_results
+          expected_invocation_count: 20 # 4 regions, 5 invocations in each
+          function_name: singalfx-extension-wrapper-test-fast-ingest-function
+          context: eu0-integrations-ingest
+          requires:
+            - run_fast_ingest_test
       - confirm_making_public:
           filters:
             branches:
@@ -150,6 +188,7 @@ workflows:
           type: approval
           requires:
               - verify_test_results
+              - verify_fast_ingest_test_results
       - publish_layer_version:
           context: aws-rnd-lambda-extension-user
           requires:

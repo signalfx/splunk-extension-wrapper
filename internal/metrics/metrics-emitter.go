@@ -48,7 +48,7 @@ func New() *MetricEmitter {
 
 		ctx: context.Background(),
 
-		sendOutTicker: util.NewTicker(configuration.ReportingDelay),
+		sendOutTicker: util.NewTicker(configuration),
 	}
 
 	if configuration.HttpTracing {

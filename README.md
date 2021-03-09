@@ -37,7 +37,8 @@ Supported variables:
 |---|---|---|---|
 |INGEST|`https://ingest.signalfx.com/v2/datapoint`|`https://ingest.{REALM}.signalfx.com/v2/datapoint`|A metrics ingest endpoint as described [here](https://developers.signalfx.com/ingest_data_reference.html#tag/Send-Metrics).|
 |TOKEN| | |Access token as described [here](https://docs.signalfx.com/en/latest/admin-guide/tokens.html#access-tokens).|
-|REPORTING_RATE|`15`|Integer (seconds). Minimum value is 1s.|Specifies how often data points are sent to Splunk Observability. The extension is optimized not to report counters of 0, which may cause longer reporting intervals than configured.  
+|FAST_INGEST|`true`|`true` or `false`|Determines the strategy used to send data points. `true` for sending metrics on every lambda invocation. With `false` metrics will be buffered and send out on intervals defined by `REPORTING_RATE`.|
+|REPORTING_RATE|`15`|Integer (seconds). Minimum value is 1s.|Specifies how often data points are sent to Splunk Observability. The extension is optimized not to report counters of 0, which may cause longer reporting intervals than configured. This variable is used only when the `FAST_INGEST` one is set to `false `.|   
 |REPORTING_TIMEOUT|`5`|Integer (seconds). Minimum value is 1s.|Specifies the time to fail datapoint requests if they don't succeed.|
 |VERBOSE|`false`|`true` or `false`|Enables verbose logging. Logs are stored in the CloudWatch Log group associated with the Lambda function.|
 |HTTP_TRACING|`false`|`true` or `false`|Enables detailed logs on HTTP calls to Splunk Observability.|

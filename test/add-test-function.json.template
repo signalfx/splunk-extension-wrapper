@@ -10,6 +10,7 @@
     "Variables": {
       "INGEST": "https://ingest.${INGEST_REALM}.signalfx.com/v2/datapoint",
       "TOKEN": "${INGEST_TOKEN}",
+      "FAST_INGEST": "${FAST_INGEST}",
       "REPORTING_RATE": "1",
       "VERBOSE": "true"
     }
