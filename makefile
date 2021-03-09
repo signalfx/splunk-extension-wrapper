@@ -93,9 +93,11 @@ $(FUNCTION_PATH): test/function/index.js
 
 	cd test/function; zip -r $(FUNCTION_PATH) index.js
 
+prepare-test-function: $(FUNCTION_PATH)
+
 request_files = $(patsubst test/%.json.template,$(TEST_DIR)/%.json,$(wildcard test/*.json.template))
 
-$(request_files): $(TEST_DIR)/%.json: test/%.json.template $(FUNCTION_PATH)
+$(request_files): $(TEST_DIR)/%.json: test/%.json.template prepare-test-function
 	mkdir -p $(TEST_DIR)
 	cat $< | \
 		FUNCTION_ZIP="$(shell base64 -i $(FUNCTION_PATH))" \
