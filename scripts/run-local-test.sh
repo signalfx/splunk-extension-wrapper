@@ -47,7 +47,7 @@ export AWS_PROFILE=$PROFILE
 $(dirname $0)/add-layer-version.sh
 
 #########################
-# prepare request files
+# prepare request files - they'll be used to create and delete a function
 
 export FUNCTION_ZIP=$(base64 -i "$FUNCTION_PATH")
 
