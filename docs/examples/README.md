@@ -2,7 +2,7 @@
 
 ## Pre-requisites
 
-* [AWS CLI](https://aws.amazon.com/cli/)
+* [AWS CLI](https://aws.amazon.com/cli/) v2
 
 **_Note:_** Scripts in this demo don't override settings of AWS CLI, so before running them,
 make sure your default profile is the appropriate one or override it in your shell using the following script:
@@ -17,6 +17,12 @@ export AWS_DEFAULT_REGION=<region>
 First, you'll run scripts that will create two functions:
 * one that uses buffering and sends data points every 30 seconds
 * another that doesn't buffer data points and sends them immediately after the function is called
+
+Make sure you're in the right directory. From the root of the repo, run: 
+
+```shell
+cd docs/examples
+```
 
 Prepare:
 * a realm where your organization resides (you can find it in [your profile](https://docs.signalfx.com/en/latest/admin-guide/tokens.html#access-tokens))
@@ -40,8 +46,8 @@ scripts/invoke-buffered.sh 100 & scripts/invoke-real-time.sh 100 & wait
 
 You can control how many times the function will be called in the above script by specifying a number as the script parameter.
 
-We have [a build-in dashboard](https://docs.signalfx.com/en/latest/dashboards/dashboard-basics.html#built-in-dashboard-groups) that is dedicated to the SignalFx Lambda Layer Extension. 
-You can check there if data points are coming or refer to [the list of available metrics](https://github.com/signalfx/lambda-layer-versions/tree/master/lambda-extension#metrics) to build your own charts.
+We have [a build-in dashboard](https://docs.signalfx.com/en/latest/dashboards/dashboard-basics.html#built-in-dashboard-groups) that is dedicated to the SignalFx Lambda Layer Extension.
+Its name is `Lambda Extension` and it can be found under the `AWS Lambda` dashboard group. You can check there if data points are coming or refer to [the list of available metrics](https://github.com/signalfx/lambda-layer-versions/tree/master/lambda-extension#metrics) to build your own charts.
 
 ## Cleanup
 
