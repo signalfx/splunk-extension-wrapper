@@ -1,0 +1,20 @@
+{
+  "FunctionName": "${FUNCTION_NAME}",
+  "Runtime": "${FUNCTION_RUNTIME}",
+  "Handler": "index.handler",
+  "Role": "${ROLE_ARN}",
+  "Code": {
+    "ZipFile": "${FUNCTION_CODE}"
+  },
+  "Environment": {
+    "Variables": {
+      "INGEST": "https://ingest.${INGEST_REALM}.signalfx.com/v2/datapoint",
+      "TOKEN": "${INGEST_TOKEN}",
+      "FAST_INGEST": "${FAST_INGEST}",
+      "REPORTING_RATE": "30"
+    }
+  },
+  "Layers": [
+    "${EXTENSION_ARN}"
+  ]
+}
