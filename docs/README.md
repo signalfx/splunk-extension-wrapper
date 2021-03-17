@@ -19,8 +19,8 @@ between available modes.
 This mode provides the behaviour that is closest to the real-time, because it sends a metric update
 every time a monitored function was invoked. This may have significant impact on overall duration of
 a function and consequently it may result in poor user experience. Fortunately this effect can be
-eliminated by enabling the Fast Invoke Response in the function, but this may come with the cost of
-increased concurrency of the function.
+eliminated by enabling the Fast Invoke Response in the function, but this may come at the cost of
+increased concurrency and longer billed duration of the function.
 
 This mode is best suited for functions that:
 * are rarely called
@@ -30,13 +30,14 @@ This mode is best suited for functions that:
 ### Buffering
 
 This mode sacrifices real-time characteristic and aims to minimize the impact on a monitored
-function. Data points will be buffered internally and send every interval that has been configured.
+function. Data points will be buffered internally and sent every interval that has been configured.
 Unfortunately, this mode comes with a pitfall that is rooted in the AWS extension architecture.
 Namely, the last chunk of buffered data points can be sent with a significant delay, because Lambda
 may freeze the execution environment. This happens when each process in the execution environment
-for has completed and there are no pending events.
+has completed and there are no pending events.
 
-This mode is best suited for functions that can sacrifice realm-time feedback.
+This mode is better for users who do not need near real-time feedback and don't want to increase
+function latency.
 
 ## Installation
 
@@ -44,21 +45,19 @@ You can attach the SignalFx Lambda Extension Layer to your Lambda Function as a 
 done using: AWS CLI, AWS Console, AWS CloudFormation, etc. Please refer to the corresponding
 documentation of the approach you use.
 
-**_Note:_** Make sure that the layer ARN, you are going to use, corresponds to the region where your
-Lambda Function is or is going to be created. Refer
-to [the newest SignalFx Lambda Extension Layer versions](lambda-extension-versions.md)
-to find an adequate ARN.
+**_Note:_** Choose the Layer ARN from the same region as your monitored function.
+Check [the newest SignalFx Lambda Extension Layer versions](lambda-extension-versions.md)
+for the adequate ARN.
 
 It is very important to tell the Extension Layer where to send data points. Use environment
-variables of your Lambda Function to configure the Extension Layer. Please refer
-to [the configuration section](#Configuration).
+variables of your Lambda Function to configure the Extension Layer.
+See [the configuration section](#Configuration) for all configuration options.
 
-Now you should see data points coming to your organization. Please refer
+Now you should see data points coming to your organization. Go
 to [the dedicated dashboard](#Built-in-dashboard) to verify your setup. You can also build your own
-dashboard based on [the metrics supported](#Metrics). 
+dashboard based on [the metrics supported](#Metrics).
 
-If you can not see data points coming please refer
-to [the troubleshooting instructions](#TROUBLESHOOTING).
+If you cannot see data points coming check [the troubleshooting instructions](#TROUBLESHOOTING).
 
 ## Built-in dashboard
 
@@ -66,14 +65,14 @@ Of course, you can build your own dashboard based on the metrics supported, but 
 take a look
 at [built-in dashboards](https://docs.signalfx.com/en/latest/getting-started/built-in-content/built-in-dashboards.html#built-in-dashboards)
 first. You can find one dedicated for the SignalFx Lambda Extension Layer. It is available under
-the `AWS Lambda` dashboard group. The dashboard demonstrates what could be achieved
-with [the metrics the Extension Layer supports](#Metrics) and could be a good starting point for
-creating your own dashboard.
+the `AWS Lambda` dashboard group. Its name is 'Lambda Extension'. The dashboard demonstrates what
+could be achieved with [the metrics the Extension Layer supports](#Metrics) and could be a good
+starting point for creating your own dashboard.
 
-Some charts in the dashboard require to
+Some charts in the dashboard will only populate if you
 have [metadata synchronization](https://docs.signalfx.com/en/latest/integrations/amazon-web-services.html#importing-account-metadata-and-custom-tags)
-for the AWS Lambda namespace enabled. Otherwise, they will remain empty. For example, it
-applies to the `Enironment Details` chart.
+for AWS Lambda namespace enabled. Otherwise, they will remain empty. For example, it applies to
+the `Enironment Details` chart.
 
 ## Metrics
 
@@ -129,12 +128,12 @@ Below is the full list of supported environment variables:
 
 ## Troubleshooting
 
-### I don't see data points coming
+### I do not see data points coming
 
 1. Check [Cloud Watch metrics](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics.html)
-   of your Lambda Function as described [here](). Make sure the Lambda Function:
-   * is getting invoked
-   * does not report errors
+   of your Lambda Function. Make sure the Lambda Function is getting invoked. You can also check if
+   errors are reported. Sometimes this indicates an issue with the Extension Layer. You can diagnose
+   this by skipping to the 4th point.
 
 2. Make sure `INGEST` and `TOKEN` variables are correctly configured. Refer
    to [the configuration section](#Configuration).
@@ -145,5 +144,5 @@ Below is the full list of supported environment variables:
 4. Enable verbose logging of the Extension Layer as described
    in [the configuration section](#Configuration).
    Check [Cloud Watch logs](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html)
-   of your Lambda Function.
-   
+   of your Lambda Function.   
+

@@ -46,8 +46,7 @@ scripts/invoke-buffered.sh 100 & scripts/invoke-real-time.sh 100 & wait
 
 You can control how many times the function will be called in the above script by specifying a number as the script parameter.
 
-We have [a build-in dashboard](https://docs.signalfx.com/en/latest/dashboards/dashboard-basics.html#built-in-dashboard-groups) that is dedicated to the SignalFx Lambda Layer Extension.
-Its name is `Lambda Extension` and it can be found under the `AWS Lambda` dashboard group. You can check there if data points are coming or refer to [the list of available metrics](https://github.com/signalfx/lambda-layer-versions/tree/master/lambda-extension#metrics) to build your own charts.
+Visit [our built-in dashboard](../README.md#Built-in-dashboard) to see if data points are coming.
 
 ## Cleanup
 
