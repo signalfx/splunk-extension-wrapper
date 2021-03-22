@@ -39,6 +39,10 @@ has completed and there are no pending events.
 This mode is better for users who do not need near real-time feedback and don't want to increase
 function latency.
 
+**_Note:_** In general, buffering mode should not be used for functions that are invoked less
+frequently than the reporting interval, as such a combination may lead to data points delays greater
+than the reporting interval.
+
 ## Installation
 
 You can attach the SignalFx Lambda Extension Layer to your Lambda Function as a layer. This can be
