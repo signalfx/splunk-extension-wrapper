@@ -91,7 +91,7 @@ The list of all metrics reported by the SignalFx Lambda Extension Layer:
 
 **_Note:_** We currently do not support a metric that tracks execution time of a function. Please
 consider using alternative indicators. The lifetime metric may help with functions that are rarely
-called. Another indication may be increased function concurrency that may be the result of growth
+called. Another indication may be increased function concurrency that may be the result of longer
 execution time.
 
 ### Dimensions
