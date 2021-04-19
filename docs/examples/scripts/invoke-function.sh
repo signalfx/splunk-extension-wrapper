@@ -4,16 +4,16 @@
 
 response_file=$(mktemp)
 function_name="${2}"
-times="${1:-100}"
+invocations="${1:-100}"
 payload="{}"
 
 trap 'rm -f "${response_file}"' EXIT
 
 echo "Function: ${function_name}"
-echo "Times: ${times}"
+echo "Invocations: ${invocations}"
 echo "Payload: ${payload}"
 
-for i in $(seq ${times}); do
+for i in $(seq ${invocations}); do
   aws lambda invoke \
   --function-name "${function_name}" \
   --payload "${payload}" \

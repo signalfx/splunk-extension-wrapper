@@ -17,7 +17,7 @@ between available modes.
 ### Fast ingest
 
 This mode provides the behaviour that is closest to the real-time, because it sends a metric update
-every time a monitored function was invoked. This may have significant impact on overall duration of
+every time a monitored function is invoked. This may have significant impact on overall duration of
 a function and consequently it may result in poor user experience. Fortunately this effect can be
 eliminated by enabling the Fast Invoke Response in the function, but this may come at the cost of
 increased concurrency and longer billed duration of the function.
@@ -53,8 +53,8 @@ documentation of the approach you use.
 Check [the newest SignalFx Lambda Extension Layer versions](lambda-extension-versions.md)
 for the adequate ARN.
 
-It is very important to tell the Extension Layer where to send data points. Use environment
-variables of your Lambda Function to configure the Extension Layer.
+It is important to tell the Extension Layer where to send data points. Use environment variables of
+your Lambda Function to configure the Extension Layer.
 See [the configuration section](#Configuration) for all configuration options.
 
 Now you should see data points coming to your organization. Go
@@ -65,8 +65,7 @@ If you cannot see data points coming check [the troubleshooting instructions](#T
 
 ## Built-in dashboard
 
-Of course, you can build your own dashboard based on the metrics supported, but we encourage you to
-take a look
+You can build your own dashboard based on the metrics supported, but we encourage you to take a look
 at [built-in dashboards](https://docs.signalfx.com/en/latest/getting-started/built-in-content/built-in-dashboards.html#built-in-dashboards)
 first. You can find one dedicated for the SignalFx Lambda Extension Layer. It is available under
 the `AWS Lambda` dashboard group. Its name is 'Lambda Extension'. The dashboard demonstrates what
@@ -76,7 +75,7 @@ starting point for creating your own dashboard.
 Some charts in the dashboard will only populate if you
 have [metadata synchronization](https://docs.signalfx.com/en/latest/integrations/amazon-web-services.html#importing-account-metadata-and-custom-tags)
 for AWS Lambda namespace enabled. Otherwise, they will remain empty. For example, it applies to
-the `Enironment Details` chart.
+the `Environment Details` chart.
 
 ## Metrics
 
@@ -86,13 +85,14 @@ The list of all metrics reported by the SignalFx Lambda Extension Layer:
 |---|---|---|
 |lambda.function.invocation|Counter|Number of Lambda Function calls.|
 |lambda.function.initialization|Counter|Number of extension starts. This is the equivalent of the number of cold starts.|
-|lambda.function.initialization.latency|Gauge|Time spent between the Lambda Function execution and its first invocation (in milliseconds).|
+|lambda.function.initialization.latency|Gauge|Time spent between a start of the extension and the first lambda invocation (in milliseconds).|
 |lambda.function.shutdown|Counter|Number of extension shutdowns.|
-|lambda.function.lifetime|Gauge|Lifetime of one extension (in milliseconds).| 
+|lambda.function.lifetime|Gauge|Lifetime of one extension (in milliseconds). Extension lifetime may span multiple lambda invocations.| 
 
 **_Note:_** We currently do not support a metric that tracks execution time of a function. Please
 consider using alternative indicators. The lifetime metric may help with functions that are rarely
-called. Additionally, increased function concurrency may mean increased execution time.
+called. Another indication may be increased function concurrency that may be the result of growth
+execution time.
 
 ### Dimensions
 

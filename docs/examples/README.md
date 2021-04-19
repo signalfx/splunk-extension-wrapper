@@ -33,8 +33,9 @@ Prepare:
 INGEST_REALM=<realm> INGEST_TOKEN=<token> EXTENSION_ARN=<arn> scripts/init.sh
 ```
 
-**_Note:_** sometimes propagation of changes in IAM across regions may take longer than expected, 
-and it may cause the script to fail to create a function, if you see such an error try to retry the script
+**_Note:_** sometimes propagation of changes in IAM across regions may take longer than expected,
+and it may cause the script to fail to create a function, if you see such an error run the script
+again
 
 ## Test
 
