@@ -103,8 +103,8 @@ $(request_files): $(TEST_DIR)/%.json: test/%.json.template prepare-test-function
 		FUNCTION_ZIP="$(shell base64 -i $(FUNCTION_PATH))" \
 		FUNCTION_LAYER="$(shell grep $(REGION) $(VERSIONS_FILE))" \
 		FUNCTION_NAME="$(FUNCTION_NAME)" \
-		FUNCTION_INGEST="$(FUNCTION_INGEST)" \
-		INGEST_TOKEN="$(INGEST_TOKEN)" \
+		SPLUNK_REALM="$(SPLUNK_REALM)" \
+		SPLUNK_ACCESS_TOKEN="$(SPLUNK_ACCESS_TOKEN)" \
 		FAST_INGEST="$(FAST_INGEST)" \
 		envsubst > $@
 
@@ -119,8 +119,8 @@ run-test: $(request_files)
 verify-test:
 	cd test/verify; npm i; \
 		FUNCTION_NAME="$(FUNCTION_NAME)" \
-		INGEST_REALM="$(INGEST_REALM)" \
-		INGEST_TOKEN="$(INGEST_TOKEN)" \
+		SPLUNK_REALM="$(SPLUNK_REALM)" \
+		SPLUNK_ACCESS_TOKEN="$(SPLUNK_ACCESS_TOKEN)" \
 		EXPECTED_INVOCATION_COUNT="$(EXPECTED_INVOCATION_COUNT)" \
 		TEST_VERIFICATION_TIMEOUT="$(TEST_VERIFICATION_TIMEOUT)" \
 		node invocations_watcher.js

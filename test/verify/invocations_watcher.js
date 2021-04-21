@@ -11,14 +11,14 @@ const program = `
 `.split('\n').join('').trim();
 
 const options = {
-  'signalflowEndpoint': `wss://stream.${process.env.INGEST_REALM}.signalfx.com`,
+  'signalflowEndpoint': `wss://stream.${process.env.SPLUNK_REALM}.signalfx.com`,
   'webSocketErrorCallback': evt => {
     console.error('web socket error', evt);
     process.exit(1);
   }
 };
 
-const client = new signalfx.SignalFlow(process.env.INGEST_TOKEN, options);
+const client = new signalfx.SignalFlow(process.env.SPLUNK_ACCESS_TOKEN, options);
 
 const expectedInvocationCount = process.env.EXPECTED_INVOCATION_COUNT || 10;
 const timeout = process.env.TEST_VERIFICATION_TIMEOUT || 60000;
