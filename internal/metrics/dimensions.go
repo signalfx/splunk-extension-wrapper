@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const dimShutdownCause = "cause"
+const dimShutdownCause = "aws_function_shutdown_cause"
 const dimRegion = "aws_region"
 const dimAccountId = "aws_account_id"
 const dimFunctionName = "aws_function_name"
