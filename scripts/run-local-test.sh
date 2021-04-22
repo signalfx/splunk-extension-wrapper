@@ -17,8 +17,9 @@ FUNCTION_PATH=bin/test/function.zip
 [[ -f "$FUNCTION_PATH" ]] || _panic "Error: the file with the function doesn't exist ($FUNCTION_PATH)"
 
 [[ -z "$PROFILE" ]] && _panic "Error: PROFILE not defined."
-[[ -z "$INGEST_REALM" ]] && _panic "Error: INGEST_REALM not defined."
-[[ -z "$INGEST_TOKEN" ]] && _panic "Error: INGEST_TOKEN not defined."
+[[ -z "$SPLUNK_REALM" ]] && [[ -z "$SPLUNK_INGEST_URL" ]] && \
+  _panic "Error: one of SPLUNK_REALM or SPLUNK_INGEST_URL must be defined."
+[[ -z "$SPLUNK_ACCESS_TOKEN" ]] && _panic "Error: SPLUNK_ACCESS_TOKEN not defined."
 
 echo "Input file: ${INPUT_FILE}"
 
@@ -29,9 +30,10 @@ export LAYER_NAME=$(whoami)-extension-layer-test
 echo "Layer name: $LAYER_NAME"
 
 echo "AWS profile: ${PROFILE}"
-echo "Ingest realm: ${INGEST_REALM}"
-echo -n "Ingest token: "
-echo "${INGEST_TOKEN}" | sed 's/./\*/g'
+echo "Splunk realm: ${SPLUNK_REALM}"
+echo "Splunk ingest URL: ${SPLUNK_INGEST_URL}"
+echo -n "Splunk ingest token: "
+echo "${SPLUNK_ACCESS_TOKEN}" | sed 's/./\*/g'
 
 TMP=$(mktemp -d)
 echo "Test dir: $TMP"

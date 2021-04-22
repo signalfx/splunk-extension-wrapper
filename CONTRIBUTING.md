@@ -50,14 +50,14 @@ Now you can run a test:
 
 ```shell
 PROFILE=integrations \ 
-INGEST_REALM=eu0 \
-INGEST_TOKEN=*** \
+SPLUNK_REALM=eu0 \
+SPLUNK_ACCESS_TOKEN=*** \
 scripts/run-local-test.sh test/local_test_example.txt 
 ```
 
 Required environment variables:
 * `PROFILE` - determines which AWS account the functions will be created under
-* `INGEST_REALM`, `INGEST_TOKEN` - defines the organization where the functions will publish data points
+* `SPLUNK_REALM` (or `SPLUNK_INGEST_URL`), `SPLUNK_ACCESS_TOKEN` - defines the organization where the functions will publish data points
 
 ### Input file
 
@@ -189,7 +189,7 @@ This includes:
       `AWS_DEFAULT_REGION`, so they point to the account setup in the previous step.
       
     * Set up a CircleCI context called `eu0-integrations-ingest`.
-      Set there the following environment variables: `INGEST_REALM`, `INGEST_TOKEN`,
+      Set there the following environment variables: `SPLUNK_REALM`, `SPLUNK_ACCESS_TOKEN`,
       so they point to a Splunk ingest.
 
 * Environment variables
@@ -197,8 +197,8 @@ This includes:
         * `AWS_ACCESS_KEY_ID` - the id of the access key for the AWS account where the layer will be tested and published
         * `AWS_SECRET_ACCESS_KEY` - the secret for the access key (the one defined above)
         * `AWS_DEFAULT_REGION` - actually it doesn't matter which region, but it is required
-        * `INGEST_REALM` - realm to which data points will be published (testing)
-        * `INGEST_TOKEN` - access token of an organization to which data points will be published (testing)
+        * `SPLUNK_REALM` - realm to which data points will be published (testing)
+        * `SPLUNK_ACCESS_TOKEN` - access token of an organization to which data points will be published (testing)
         * `PROFILE` - should be set to 'default'
 
 
