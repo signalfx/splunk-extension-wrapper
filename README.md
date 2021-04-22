@@ -24,7 +24,7 @@ Reported dimension:
 |aws_function_version|The version of the Lambda function|
 |aws_function_qualifier|AWS Function Version Qualifier (version or version alias, available only for invocations)|
 |aws_function_runtime|AWS execution environment|
-|cause|It is only present in the shutdown metric. It holds the reason of the shutdown.|
+|aws_function_shutdown_cause|It is only present in the shutdown metric. It holds the reason of the shutdown.|
 
 # CONFIGURATION
 
