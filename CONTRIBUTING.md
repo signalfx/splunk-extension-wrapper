@@ -57,7 +57,7 @@ scripts/run-local-test.sh test/local_test_example.txt
 
 Required environment variables:
 * `PROFILE` - determines which AWS account the functions will be created under
-* `SPLUNK_REALM`, `SPLUNK_ACCESS_TOKEN` - defines the organization where the functions will publish data points
+* `SPLUNK_REALM` (or `SPLUNK_INGEST_URL`), `SPLUNK_ACCESS_TOKEN` - defines the organization where the functions will publish data points
 
 ### Input file
 

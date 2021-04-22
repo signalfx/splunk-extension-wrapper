@@ -17,7 +17,8 @@ FUNCTION_PATH=bin/test/function.zip
 [[ -f "$FUNCTION_PATH" ]] || _panic "Error: the file with the function doesn't exist ($FUNCTION_PATH)"
 
 [[ -z "$PROFILE" ]] && _panic "Error: PROFILE not defined."
-[[ -z "$SPLUNK_REALM" ]] && _panic "Error: SPLUNK_REALM not defined."
+[[ -z "$SPLUNK_REALM" ]] && [[ -z "$SPLUNK_INGEST_URL" ]] && \
+  _panic "Error: one of SPLUNK_REALM or SPLUNK_INGEST_URL must be defined."
 [[ -z "$SPLUNK_ACCESS_TOKEN" ]] && _panic "Error: SPLUNK_ACCESS_TOKEN not defined."
 
 echo "Input file: ${INPUT_FILE}"
@@ -30,6 +31,7 @@ echo "Layer name: $LAYER_NAME"
 
 echo "AWS profile: ${PROFILE}"
 echo "Splunk realm: ${SPLUNK_REALM}"
+echo "Splunk ingest URL: ${SPLUNK_INGEST_URL}"
 echo -n "Splunk ingest token: "
 echo "${SPLUNK_ACCESS_TOKEN}" | sed 's/./\*/g'
 
