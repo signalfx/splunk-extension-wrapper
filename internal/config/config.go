@@ -22,7 +22,7 @@ const ingestUrlFormat = "https://ingest.%s.signalfx.com/v2/datapoint"
 
 const minTokenLength = 10 // SFx Access Tokens are 22 chars long in 2019 but accept 10 or more chars just in case
 
-const realm = "SPLUNK_REALM"
+const realmEnv = "SPLUNK_REALM"
 const ingestURLEnv = "SPLUNK_INGEST_URL"
 const tokenEnv = "SPLUNK_ACCESS_TOKEN"
 const fastIngestEnv = "FAST_INGEST"
@@ -33,7 +33,6 @@ const httpTracingEnv = "HTTP_TRACING"
 
 type Configuration struct {
 	SplunkRealm      string
-	ingestURL        string
 	SplunkIngestUrl  string
 	SplunkToken      string
 	FastIngest       bool
@@ -45,8 +44,8 @@ type Configuration struct {
 
 func New() Configuration {
 	configuration := Configuration{
-		SplunkRealm:      strOrDefault(realm, defaultRealm),
-		ingestURL:        strOrDefault(ingestURLEnv, defaultIngestURL),
+		SplunkRealm:      strOrDefault(realmEnv, defaultRealm),
+		SplunkIngestUrl:  strOrDefault(ingestURLEnv, defaultIngestURL),
 		SplunkToken:      strOrDefault(tokenEnv, defaultToken),
 		FastIngest:       boolOrDefault(fastIngestEnv, defaultFastIngest),
 		ReportingDelay:   durationOrDefault(reportingDelayEnv, defaultReportingDuration),
@@ -55,7 +54,6 @@ func New() Configuration {
 		HttpTracing:      boolOrDefault(httpTracingEnv, defaultHttpTracing),
 	}
 
-	configuration.SplunkIngestUrl = configuration.ingestURL
 	if configuration.SplunkIngestUrl == "" {
 		configuration.SplunkIngestUrl = fmt.Sprintf(ingestUrlFormat, configuration.SplunkRealm)
 	}
@@ -68,7 +66,7 @@ func (c Configuration) String() string {
 	addLine := func(format string, arg interface{}) { builder.WriteString(fmt.Sprintf(format+"\n", arg)) }
 
 	addLine("Splunk Realm      = %v", c.SplunkRealm)
-	addLine("Splunk Ingest URL = %v", c.ingestURL)
+	addLine("Splunk Ingest URL = %v", c.SplunkIngestUrl)
 	addLine("Splunk Token      = %v", obfuscatedToken(c.SplunkToken))
 	addLine("Fast Ingest       = %v", c.FastIngest)
 	addLine("Reporting Delay   = %v", c.ReportingDelay.Seconds())
