@@ -8,8 +8,9 @@
   },
   "Environment": {
     "Variables": {
-      "INGEST": "https://ingest.${INGEST_REALM}.signalfx.com/v2/datapoint",
-      "TOKEN": "${INGEST_TOKEN}",
+      "SPLUNK_REALM": "${SPLUNK_REALM}",
+      "SPLUNK_INGEST_URL": "${SPLUNK_INGEST_URL}",
+      "SPLUNK_ACCESS_TOKEN": "${SPLUNK_ACCESS_TOKEN}",
       "FAST_INGEST": "${FAST_INGEST}",
       "REPORTING_RATE": "30"
     }

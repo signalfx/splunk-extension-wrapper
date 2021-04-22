@@ -30,7 +30,7 @@ Prepare:
 * arn of extension (you can find them in [the versions file](https://github.com/signalfx/lambda-layer-versions/blob/master/lambda-extension/lambda-extension-versions.md)) - make sure this is for the region where you intend to create the functions
 
 ```shell
-INGEST_REALM=<realm> INGEST_TOKEN=<token> EXTENSION_ARN=<arn> scripts/init.sh
+SPLUNK_REALM=<realm> SPLUNK_ACCESS_TOKEN=<token> EXTENSION_ARN=<arn> scripts/init.sh
 ```
 
 **_Note:_** sometimes propagation of changes in IAM across regions may take longer than expected,

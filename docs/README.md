@@ -114,8 +114,9 @@ The list of all dimensions associated with the metrics reported by the SignalFx 
 
 The SignalFx Lambda Extension Layer can be configured by environment variables of a Lambda Function.
 
-Minimal configuration should include `INGEST` and `TOKEN` variables, 
-so the layer can identify the organization to which it should send data points.
+Minimal configuration should include `SPLUNK_REALM` (or `SPLUNK_INGEST_URL`)
+and `SPLUNK_ACCESS_TOKEN` variables, so the layer can identify the organization to which it should
+send data points.
 
 Below is the full list of supported environment variables:
  
@@ -139,8 +140,8 @@ Below is the full list of supported environment variables:
    errors are reported. Sometimes this indicates an issue with the Extension Layer. You can diagnose
    this by skipping to the 4th point.
 
-2. Make sure `INGEST` and `TOKEN` variables are correctly configured. Refer
-   to [the configuration section](#Configuration).
+2. Make sure `SPLUNK_REALM` (or `SPLUNK_INGEST_URL`) and `SPLUNK_ACCESS_TOKEN` variables are
+   correctly configured. Refer to [the configuration section](#Configuration).
 
 3. The Extension Layer working in the buffering mode may send data points with significant delay.
    Refer to [the fast ingest section](#Fast-ingest).
