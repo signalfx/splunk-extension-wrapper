@@ -36,7 +36,7 @@ Supported variables:
 |Name|Default value|Accepted values|Description|
 |---|---|---|---|
 |SPLUNK_REALM|`us0`| |The name of your organization's realm as described [here](https://dev.splunk.com/observability/docs/realms_in_endpoints/). It is used to build a standard endpoint for ingesting metrics.|
-|SPLUNK_INGEST_URL| |`https://ingest.eu0.signalfx.com`|An ingest endpoint - you can find it in your account settings screen. It overrides the endpoint defined by the `SPLUNK_REALM` variable and it can be used to point to non standard endpoints.|
+|SPLUNK_INGEST_URL| |`https://ingest.eu0.signalfx.com`|Real-time Data Ingest - you can find it in your account settings screen. It overrides the endpoint defined by the `SPLUNK_REALM` variable and it can be used to point to non standard endpoints.|
 |SPLUNK_ACCESS_TOKEN| | |Access token as described [here](https://docs.signalfx.com/en/latest/admin-guide/tokens.html#access-tokens).|
 |FAST_INGEST|`true`|`true` or `false`|Determines the strategy used to send data points. `true` for sending metrics on every lambda invocation. With `false` metrics will be buffered and send out on intervals defined by `REPORTING_RATE`.|
 |REPORTING_RATE|`15`|Integer (seconds). Minimum value is 1s.|Specifies how often data points are sent to Splunk Observability. The extension is optimized not to report counters of 0, which may cause longer reporting intervals than configured. This variable is used only when the `FAST_INGEST` one is set to `false `.|   
