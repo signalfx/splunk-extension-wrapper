@@ -18,7 +18,7 @@ const defaultReportingTimeout = time.Duration(5) * time.Second
 const defaultVerbose = false
 const defaultHttpTracing = false
 
-const ingestUrlFormat = "https://ingest.%s.signalfx.com/v2/datapoint"
+const ingestUrlFormat = "https://ingest.%s.signalfx.com"
 
 const minTokenLength = 10 // SFx Access Tokens are 22 chars long in 2019 but accept 10 or more chars just in case
 
