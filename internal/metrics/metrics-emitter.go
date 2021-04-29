@@ -35,7 +35,7 @@ func New() *MetricEmitter {
 	configuration := config.New()
 
 	scheduler := sfxclient.NewScheduler()
-	scheduler.Sink.(*sfxclient.HTTPSink).DatapointEndpoint = configuration.SplunkIngestUrl + "/v2/datapoint"
+	scheduler.Sink.(*sfxclient.HTTPSink).DatapointEndpoint = configuration.SplunkMetricsUrl
 	scheduler.Sink.(*sfxclient.HTTPSink).AuthToken = configuration.SplunkToken
 	scheduler.Sink.(*sfxclient.HTTPSink).Client.Timeout = configuration.ReportingTimeout
 	scheduler.ReportingTimeout(configuration.ReportingTimeout)

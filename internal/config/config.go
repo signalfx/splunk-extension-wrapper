@@ -33,7 +33,7 @@ const httpTracingEnv = "HTTP_TRACING"
 
 type Configuration struct {
 	SplunkRealm      string
-	SplunkIngestUrl  string
+	SplunkMetricsUrl string
 	SplunkToken      string
 	FastIngest       bool
 	ReportingDelay   time.Duration
@@ -45,7 +45,7 @@ type Configuration struct {
 func New() Configuration {
 	configuration := Configuration{
 		SplunkRealm:      strOrDefault(realmEnv, defaultRealm),
-		SplunkIngestUrl:  strOrDefault(ingestURLEnv, defaultIngestURL),
+		SplunkMetricsUrl: strOrDefault(ingestURLEnv, defaultIngestURL),
 		SplunkToken:      strOrDefault(tokenEnv, defaultToken),
 		FastIngest:       boolOrDefault(fastIngestEnv, defaultFastIngest),
 		ReportingDelay:   durationOrDefault(reportingDelayEnv, defaultReportingDuration),
@@ -54,9 +54,11 @@ func New() Configuration {
 		HttpTracing:      boolOrDefault(httpTracingEnv, defaultHttpTracing),
 	}
 
-	if configuration.SplunkIngestUrl == "" {
-		configuration.SplunkIngestUrl = fmt.Sprintf(ingestUrlFormat, configuration.SplunkRealm)
+	if configuration.SplunkMetricsUrl == "" {
+		configuration.SplunkMetricsUrl = fmt.Sprintf(ingestUrlFormat, configuration.SplunkRealm)
 	}
+
+	configuration.SplunkMetricsUrl += "/v2/datapoint"
 
 	return configuration
 }
@@ -65,14 +67,14 @@ func (c Configuration) String() string {
 	builder := strings.Builder{}
 	addLine := func(format string, arg interface{}) { builder.WriteString(fmt.Sprintf(format+"\n", arg)) }
 
-	addLine("Splunk Realm      = %v", c.SplunkRealm)
-	addLine("Splunk Ingest URL = %v", c.SplunkIngestUrl)
-	addLine("Splunk Token      = %v", obfuscatedToken(c.SplunkToken))
-	addLine("Fast Ingest       = %v", c.FastIngest)
-	addLine("Reporting Delay   = %v", c.ReportingDelay.Seconds())
-	addLine("Reporting Timeout = %v", c.ReportingTimeout.Seconds())
-	addLine("Verbose           = %v", c.Verbose)
-	addLine("HTTP Tracing      = %v", c.HttpTracing)
+	addLine("Splunk Realm       = %v", c.SplunkRealm)
+	addLine("Splunk Metrics URL = %v", c.SplunkMetricsUrl)
+	addLine("Splunk Token       = %v", obfuscatedToken(c.SplunkToken))
+	addLine("Fast Ingest        = %v", c.FastIngest)
+	addLine("Reporting Delay    = %v", c.ReportingDelay.Seconds())
+	addLine("Reporting Timeout  = %v", c.ReportingTimeout.Seconds())
+	addLine("Verbose            = %v", c.Verbose)
+	addLine("HTTP Tracing       = %v", c.HttpTracing)
 
 	return builder.String()
 }
