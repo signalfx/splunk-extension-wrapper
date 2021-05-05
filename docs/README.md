@@ -123,7 +123,7 @@ Below is the full list of supported environment variables:
 |Name|Default value|Accepted values|Description|
 |---|---|---|---|
 |SPLUNK_REALM|`us0`| |The name of your organization's realm as described [here](https://dev.splunk.com/observability/docs/realms_in_endpoints/). It is used to build a standard endpoint for ingesting metrics.|
-|SPLUNK_INGEST_URL| |`https://ingest.eu0.signalfx.com/v2/datapoint`|A metrics ingest endpoint as described [here](https://developers.signalfx.com/ingest_data_reference.html#tag/Send-Metrics). It overrides the endpoint defined by the `SPLUNK_REALM` variable and it can be used to point to non standard endpoints.|
+|SPLUNK_INGEST_URL| |`https://ingest.eu0.signalfx.com`|Real-time Data Ingest - you can find it in your account settings screen. It overrides the endpoint defined by the `SPLUNK_REALM` variable and it can be used to point to non standard endpoints.|
 |SPLUNK_ACCESS_TOKEN| | |Access token as described [here](https://docs.signalfx.com/en/latest/admin-guide/tokens.html#access-tokens).|
 |REPORTING_RATE|`15`|An integer (seconds). Minimum value is 1s.|Specifies how often data points are sent to SignalFx. Due to the way the AWS Lambda execution environment works metrics may be sent less often.|  
 |REPORTING_TIMEOUT|`5`|An integer (seconds). Minimum value is 1s.|Specifies metric send operation timeout.|
