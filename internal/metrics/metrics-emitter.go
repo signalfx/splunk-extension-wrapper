@@ -99,7 +99,9 @@ func (emitter *MetricEmitter) Shutdown(condition shutdown.Condition) {
 }
 
 func (emitter MetricEmitter) buildAWSUniqueId(functionArn arn.ARN) string {
-	return fmt.Sprintf("lambda_%s_%s_%s", emitter.functionName, functionArn.Region, functionArn.AccountID)
+	return fmt.Sprintf("lambda_%s:%s_%s_%s",
+		emitter.functionName, emitter.functionVersion,
+		functionArn.Region, functionArn.AccountID)
 }
 
 func (emitter MetricEmitter) arnWithVersion(parsedArn arn.ARN) string {
