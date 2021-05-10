@@ -20,8 +20,7 @@ fi
 
 aws iam detach-role-policy --no-cli-pager \
   --role-name "${ROLE_NAME}" \
-  --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole ||
-    _panic "Can't detach the basic execution role from the ${ROLE_NAME} role"
+  --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
 aws iam delete-role \
   --role-name "${ROLE_NAME}" \
