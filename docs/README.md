@@ -43,6 +43,13 @@ function latency.
 frequently than the reporting interval, as such a combination may lead to data points delays greater
 than the reporting interval.
 
+### Tag/property synchronization
+
+Metrics reported by the SignalFx Lambda Extension Layer don't have tag/properties attached to them
+out of the box. However, they support tag/properties synchronization. To enable this feature you
+have to configure an AWS data source in Splunk Observability Cloud that will pull in tag/properties
+for AWS/Lambda namespace.
+
 ## Installation
 
 You can attach the SignalFx Lambda Extension Layer to your Lambda Function as a layer. This can be
