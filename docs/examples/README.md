@@ -1,6 +1,6 @@
 # Demo the SignalFx Lambda Extension Layer
 
-## Pre-requisites
+## Prerequisites
 
 * [AWS CLI](https://aws.amazon.com/cli/) v2
 
@@ -14,7 +14,7 @@ export AWS_DEFAULT_REGION=<region>
 
 ## Deployment
 
-First, you'll run scripts that will create two functions:
+First, you'll run scripts that create two functions:
 * one that uses buffering and sends data points every 30 seconds
 * another that doesn't buffer data points and sends them immediately after the function is called
 
@@ -33,9 +33,9 @@ Prepare:
 SPLUNK_REALM=<realm> SPLUNK_ACCESS_TOKEN=<token> EXTENSION_ARN=<arn> scripts/init.sh
 ```
 
-**_Note:_** sometimes propagation of changes in IAM across regions may take longer than expected,
-and it may cause the script to fail to create a function, if you see such an error run the script
-again
+**_Note:_** Sometimes propagation of changes in IAM across regions takes longer than expected,
+and slow propagation of changes may cause the script to fail to create a function. If you see such an error, run the script
+again.
 
 ## Test
 
