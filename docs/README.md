@@ -20,10 +20,10 @@ between available modes.
 
 ### Fast ingest
 
-This mode behaves in a way that is closest to the real-time monitoring, because it sends a metric update
-every time a monitored function is invoked. This may have significant impact on the overall duration of
-a function, and consequently fast ingent may result in poor user experience. The slowing effect can be
-eliminated if you enable Fast Invoke Response in the function, but this may come at the cost of
+This mode behaves in a way that is closest to the real-time monitoring, because it sends a metric
+update every time a monitored function is invoked. This may have significant impact on the overall
+duration of a function, and consequently fast ingest may result in poor user experience. The slowing
+effect can be eliminated if Fast Invoke Response is enabled, but this may come at the cost of
 increased concurrency and longer billed duration of the function.
 
 Fast ingest mode is best suited for functions that:
