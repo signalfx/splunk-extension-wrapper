@@ -1,11 +1,11 @@
-# Demo the SignalFx Lambda Extension Layer
+# Demo the Splunk Extension for AWS Lambda
 
 ## Prerequisites
 
 * [AWS CLI](https://aws.amazon.com/cli/) v2
 
 **_Note:_** Scripts in this demo don't override settings of AWS CLI, so before running them,
-make sure your default profile is the appropriate one or override it in your shell using the following script:
+make sure your default profile is the appropriate one, or override it in your shell using the following script:
 
 ```shell
 export AWS_PROFILE=<profile name>
