@@ -1,14 +1,14 @@
-# SignalFx Lambda Extension Layer
+# Splunk Extension for AWS Lambda
 
-The SignalFx Lambda Extension Layer provides customers with a simplified runtime-independent
-interface to collect high-resolution, low-latency metrics on Lambda Function execution. The
-Extension Layer tracks metrics for cold start, invocation count, function lifetime, and termination
+The Splunk Extension for AWS Lambda provides customers with a simplified runtime-independent
+interface to collect high-resolution, low-latency metrics on AWS Lambda function execution. The
+Splunk Extension layer tracks metrics for cold start, invocation count, function lifetime, and termination
 condition. This enables customers to effectively monitor their AWS Lambda Functions with
 minimal overhead.
 
 ## Concepts
 
-The SignalFx Lambda Extension Layer sends metrics in real-time with minimal impact on a monitored function. Two ingest
+The Splunk Extension for AWS Lambda sends metrics in real-time with minimal impact on a monitored function. Two ingest
 modes help meet these requirements: 
 * [fast ingest](#Fast-ingest) 
 * [buffering](#Buffering)
@@ -49,19 +49,19 @@ than the reporting interval.
 
 ### Tag/property synchronization
 
-Metrics reported by the SignalFx Lambda Extension Layer don't have tag/properties attached to them
+Metrics reported by the Splunk extension don't have tag/properties attached to them
 out of the box. However, they support tag/properties synchronization. To enable this feature, you
 have to configure an AWS data source in Splunk Observability Cloud that will pull in tag/properties
 for AWS/Lambda namespace.
 
 ## Installation
 
-You can attach the SignalFx Lambda Extension Layer to your Lambda Function as a layer. This can be
+You attach the Splunk extension for AWS Lambda to your Lambda function as a layer. This can be
 done using: AWS CLI, AWS Console, AWS CloudFormation, etc. Please refer to the corresponding
 documentation for the approach you use.
 
 **_Note:_** Choose the Layer ARN from the same region as your monitored function.
-Check [the newest SignalFx Lambda Extension Layer versions](lambda-extension-versions.md)
+Check [the newest Splunk Extension for AWS Lambda versions](lambda-extension-versions.md)
 for the adequate ARN.
 
 It is important to tell the Extension Layer where to send data points. Use the environment variables of
@@ -78,7 +78,7 @@ If you cannot see incoming data points, check [the troubleshooting instructions]
 
 You can build your own dashboard based on the metrics supported, but look first 
 at [built-in dashboards](https://docs.signalfx.com/en/latest/getting-started/built-in-content/built-in-dashboards.html#built-in-dashboards). 
-A dashboard dedicated to the SignalFx Lambda Extension Layer is available under
+A dashboard dedicated to the Splunk Extension for AWS Lambda is available under
 the `AWS Lambda` dashboard group. Its name is 'Lambda Extension'. The dashboard demonstrates what
 can be achieved with [the metrics the Extension Layer supports](#Metrics), and could be a good
 starting point for creating your own dashboard.
@@ -90,7 +90,7 @@ the `Environment Details` chart.
 
 ## Metrics
 
-The list of all metrics reported by the SignalFx Lambda Extension Layer:
+The list of all metrics reported by Splunk Extension for AWS Lambda:
 
 |Metric name|Type|Description|
 |---|---|---|
@@ -106,7 +106,7 @@ called. Another indication of longer execution time may be increased function co
 
 ### Dimensions
 
-The list of all dimensions associated with the metrics reported by the SignalFx Lambda Extension Layer:
+The list of all dimensions associated with the metrics reported by the Splunk Extension for AWS Lambda:
 
 |Dimension name|Description|
 |---|---|
@@ -122,7 +122,7 @@ The list of all dimensions associated with the metrics reported by the SignalFx 
 
 ## Configuration
 
-The SignalFx Lambda Extension Layer can be configured by environment variables of a Lambda Function.
+The Splunk Extension for AWS Lambda can be configured by environment variables of a Lambda Function.
 
 Minimal configuration should include `SPLUNK_REALM` (or `SPLUNK_INGEST_URL`)
 and `SPLUNK_ACCESS_TOKEN` variables, so the layer can identify the organization to which it should
@@ -136,10 +136,10 @@ Below is the full list of supported environment variables:
 |SPLUNK_INGEST_URL| |`https://ingest.eu0.signalfx.com`|Real-time Data Ingest - you can find it in your account settings screen. It overrides the endpoint defined by the `SPLUNK_REALM` variable and it can be used to point to non standard endpoints.|
 |SPLUNK_ACCESS_TOKEN| | |Access token as described [here](https://docs.signalfx.com/en/latest/admin-guide/tokens.html#access-tokens).|
 |FAST_INGEST|`true`|`true` or `false`|Determines the strategy used to send data points. Use `true` to send metrics on every Lambda invocation ([fast ingest](#Fast-ingest) mode). With `false` metrics will be buffered and send out on intervals defined by `REPORTING_RATE` ([buffering](#Buffering) mode).|
-|REPORTING_RATE|`15`|An integer (seconds). Minimum value is 1s.|Specifies how often data points are sent to SignalFx. Due to the way the AWS Lambda execution environment works metrics may be sent less often.|  
+|REPORTING_RATE|`15`|An integer (seconds). Minimum value is 1s.|Specifies how often data points are sent to Splunk. Due to the way the AWS Lambda execution environment works, metrics may be sent less often.|  
 |REPORTING_TIMEOUT|`5`|An integer (seconds). Minimum value is 1s.|Specifies metric send operation timeout.|
 |VERBOSE|`false`|`true` or `false`|Enables verbose logging. Logs are stored in a CloudWatch Logs group associated with a Lambda Function.|
-|HTTP_TRACING|`false`|`true` or `false`|Enables detailed logs on HTTP calls to SignalFx.|
+|HTTP_TRACING|`false`|`true` or `false`|Enables detailed logs on HTTP calls to Splunk.|
 
 
 ## Troubleshooting
