@@ -2,51 +2,55 @@
 
 The SignalFx Lambda Extension Layer provides customers with a simplified runtime-independent
 interface to collect high-resolution, low-latency metrics on Lambda Function execution. The
-Extension Layer tracks metrics for cold start, invocation count, function lifetime and termination
-condition enabling customers to efficiently and effectively monitor their Lambda Functions with
+Extension Layer tracks metrics for cold start, invocation count, function lifetime, and termination
+condition. This enables customers to effectively monitor their AWS Lambda Functions with
 minimal overhead.
 
 ## Concepts
 
-The SignalFx Lambda Extension Layer was designed to send metrics in real-time and moreover to have
-minimal impact on a monitored function. To meet these needs, we introduce two ingest
-modes: [fast ingest](#Fast-ingest) and [buffering](#Buffering). You have to choose the one that best
-suits your case. Please refer to [the configuration section](#Configuration) to check how to switch
+The SignalFx Lambda Extension Layer sends metrics in real-time with minimal impact on a monitored function. Two ingest
+modes help meet these requirements: 
+* [fast ingest](#Fast-ingest) 
+* [buffering](#Buffering)
+
+You choose the ingest mode that best suits your case. 
+
+Please refer to [the configuration section](#Configuration) for instructions on how to switch
 between available modes.
 
 ### Fast ingest
 
-This mode provides the behaviour that is closest to the real-time, because it sends a metric update
-every time a monitored function is invoked. This may have significant impact on overall duration of
-a function and consequently it may result in poor user experience. Fortunately this effect can be
-eliminated by enabling the Fast Invoke Response in the function, but this may come at the cost of
+This mode behaves in a way that is closest to the real-time monitoring, because it sends a metric update
+every time a monitored function is invoked. This may have significant impact on the overall duration of
+a function, and consequently fast ingent may result in poor user experience. The slowing effect can be
+eliminated if you enable Fast Invoke Response in the function, but this may come at the cost of
 increased concurrency and longer billed duration of the function.
 
-This mode is best suited for functions that:
+Fast ingest mode is best suited for functions that:
 * are rarely called
 * can accept increased concurrency
-* require realm-time metrics
+* require real-time metrics
 
 ### Buffering
 
-This mode sacrifices real-time characteristic and aims to minimize the impact on a monitored
-function. Data points will be buffered internally and sent every interval that has been configured.
-Unfortunately, this mode comes with a pitfall that is rooted in the AWS extension architecture.
-Namely, the last chunk of buffered data points can be sent with a significant delay, because Lambda
+This mode sacrifices real-time characteristics so as to minimize impact on monitored
+functions. Data points are buffered internally and sent at the interval you configure.
+Unfortunately, buffering mode has a limitation rooted in the AWS extension architecture:
+The last chunk of buffered data points can be sent with a significant delay, because AWS Lambda
 may freeze the execution environment. This happens when each process in the execution environment
 has completed and there are no pending events.
 
-This mode is better for users who do not need near real-time feedback and don't want to increase
+Buffering mode is best for users who do not need near real-time feedback and don't want to increase
 function latency.
 
 **_Note:_** In general, buffering mode should not be used for functions that are invoked less
-frequently than the reporting interval, as such a combination may lead to data points delays greater
+frequently than the reporting interval, because such a combination may lead to data point delays greater
 than the reporting interval.
 
 ### Tag/property synchronization
 
 Metrics reported by the SignalFx Lambda Extension Layer don't have tag/properties attached to them
-out of the box. However, they support tag/properties synchronization. To enable this feature you
+out of the box. However, they support tag/properties synchronization. To enable this feature, you
 have to configure an AWS data source in Splunk Observability Cloud that will pull in tag/properties
 for AWS/Lambda namespace.
 
@@ -54,34 +58,34 @@ for AWS/Lambda namespace.
 
 You can attach the SignalFx Lambda Extension Layer to your Lambda Function as a layer. This can be
 done using: AWS CLI, AWS Console, AWS CloudFormation, etc. Please refer to the corresponding
-documentation of the approach you use.
+documentation for the approach you use.
 
 **_Note:_** Choose the Layer ARN from the same region as your monitored function.
 Check [the newest SignalFx Lambda Extension Layer versions](lambda-extension-versions.md)
 for the adequate ARN.
 
-It is important to tell the Extension Layer where to send data points. Use environment variables of
+It is important to tell the Extension Layer where to send data points. Use the environment variables of
 your Lambda Function to configure the Extension Layer.
 See [the configuration section](#Configuration) for all configuration options.
 
-Now you should see data points coming to your organization. Go
+After you configure your AWS Lambda Extension Layer, you should see data points coming to your organization. Go
 to [the dedicated dashboard](#Built-in-dashboard) to verify your setup. You can also build your own
 dashboard based on [the metrics supported](#Metrics).
 
-If you cannot see data points coming check [the troubleshooting instructions](#TROUBLESHOOTING).
+If you cannot see incoming data points, check [the troubleshooting instructions](#TROUBLESHOOTING).
 
 ## Built-in dashboard
 
-You can build your own dashboard based on the metrics supported, but we encourage you to take a look
-at [built-in dashboards](https://docs.signalfx.com/en/latest/getting-started/built-in-content/built-in-dashboards.html#built-in-dashboards)
-first. You can find one dedicated for the SignalFx Lambda Extension Layer. It is available under
+You can build your own dashboard based on the metrics supported, but look first 
+at [built-in dashboards](https://docs.signalfx.com/en/latest/getting-started/built-in-content/built-in-dashboards.html#built-in-dashboards). 
+A dashboard dedicated to the SignalFx Lambda Extension Layer is available under
 the `AWS Lambda` dashboard group. Its name is 'Lambda Extension'. The dashboard demonstrates what
-could be achieved with [the metrics the Extension Layer supports](#Metrics) and could be a good
+can be achieved with [the metrics the Extension Layer supports](#Metrics), and could be a good
 starting point for creating your own dashboard.
 
-Some charts in the dashboard will only populate if you
+Some charts in the dashboard only populate if you
 have [metadata synchronization](https://docs.signalfx.com/en/latest/integrations/amazon-web-services.html#importing-account-metadata-and-custom-tags)
-for AWS Lambda namespace enabled. Otherwise, they will remain empty. For example, it applies to
+for AWS Lambda namespace enabled. Otherwise, they will remain empty. This constraint applies, for example, to
 the `Environment Details` chart.
 
 ## Metrics
@@ -98,8 +102,7 @@ The list of all metrics reported by the SignalFx Lambda Extension Layer:
 
 **_Note:_** We currently do not support a metric that tracks execution time of a function. Please
 consider using alternative indicators. The lifetime metric may help with functions that are rarely
-called. Another indication may be increased function concurrency that may be the result of longer
-execution time.
+called. Another indication of longer execution time may be increased function concurrency.
 
 ### Dimensions
 
