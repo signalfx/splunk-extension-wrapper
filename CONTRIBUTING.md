@@ -9,13 +9,13 @@ make
 To deploy the layer as a new version:
 
 ```shell
-make add-layer-version PROFILE=integrations REGIONS=us-east-1 LAYER_NAME=signalfx-extension-wrapper CI=t
+make add-layer-version PROFILE=integrations REGIONS=us-east-1 LAYER_NAME=splunk-lambda-extension CI=t
 ```
 
 To make the layer globally available (example for us-east-1 only):
 
 ```shell
-make add-layer-version-permission PROFILE=integrations REGIONS=us-east-1 LAYER_NAME=signalfx-extension-wrapper CI=t
+make add-layer-version-permission PROFILE=integrations REGIONS=us-east-1 LAYER_NAME=splunk-lambda-extension CI=t
 ```
 
 Variables explanation:
@@ -109,14 +109,14 @@ This includes:
                     "Action": [
                         "lambda:PublishLayerVersion"
                     ],
-                    "Resource": "arn:aws:lambda:*:<account_number>:layer:signalfx-extension-wrapper"
+                    "Resource": "arn:aws:lambda:*:<account_number>:layer:splunk-lambda-extension"
                 },
                 {
                     "Effect": "Allow",
                     "Action": [
                         "lambda:AddLayerVersionPermission"
                     ],
-                    "Resource": "arn:aws:lambda:*:<account_number>:layer:signalfx-extension-wrapper:*"
+                    "Resource": "arn:aws:lambda:*:<account_number>:layer:splunk-lambda-extension:*"
                 }
             ]
         }

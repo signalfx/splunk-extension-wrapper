@@ -15,7 +15,7 @@ FUNCTION_PATH := $(TEST_DIR)/function.zip
 FUNCTION_NAME := singalfx-extension-wrapper-test-function
 
 PROFILE ?= integrations
-LAYER_NAME ?= signalfx-extension-wrapper
+LAYER_NAME ?= splunk-lambda-extension
 
 FAST_INGEST ?= false
 
