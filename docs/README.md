@@ -96,7 +96,7 @@ For example, if you wish to include Splunk extension in a container image:
 
 
 **_Note:_** If you want to attach the layer without downloading it (for example, in AWS Console), refer to the Layer ARN from the same region as your monitored function.
-Check [the newest Splunk Extension for AWS Lambda versions](lambda-extension-versions.md)
+Check [the newest Splunk Extension for AWS Lambda versions](https://github.com/signalfx/lambda-layer-versions/blob/master/lambda-extension/lambda-extension-versions.md)
 for the adequate ARN.
 
 It is important to tell the Extension Layer where to send data points. Use the environment variables of
