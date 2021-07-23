@@ -1,6 +1,0 @@
-extension-local-test-1,us-east-1,100,3
-extension-local-test-2,us-east-1,120,2
-extension-local-test-2,us-east-1,100,
-extension-local-test-2,us-east-1,200,1
-extension-local-test,us-east-2,300,
-extension-local-test,us-east-2,100,3

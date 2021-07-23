@@ -1,9 +1,0 @@
-{
-  "name": "verify",
-  "version": "1.0.0",
-  "description": "Verifies test results using SignalFlow",
-  "main": "index.js",
-  "dependencies": {
-    "signalfx": "^7.2.2"
-  }
-}
