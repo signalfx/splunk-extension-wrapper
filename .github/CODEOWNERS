@@ -1,0 +1,17 @@
+#  https://help.github.com/en/articles/about-code-owners
+#
+# Global Owners
+* @signalfx/gdi-go-maintainers @signalfx/gdi-go-approvers
+
+.github/CODEOWNERS @signalfx/gdi-go-maintainers
+
+#####################################################
+#
+# Docs reviewers
+#
+#####################################################
+
+*.md    @signalfx/gdi-go-maintainers @signalfx/gdi-go-approvers @signalfx/docs
+*.rst   @signalfx/gdi-go-maintainers @signalfx/gdi-go-approvers @signalfx/docs
+docs/   @signalfx/gdi-go-maintainers @signalfx/gdi-go-approvers @signalfx/docs
+README* @signalfx/gdi-go-maintainers @signalfx/gdi-go-approvers @signalfx/docs @signalfx/gdi-specification-approvers @signalfx/gdi-specification-maintainers
