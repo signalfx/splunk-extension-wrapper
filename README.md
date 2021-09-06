@@ -32,3 +32,5 @@ Go to the [docs directory](docs) for more details.
 # License and versioning
 
 The project is released under the terms of the Apache Software License version 2.0. For more details, see [the license file](./LICENSE).
+
+The project uses third-party components. For more details, see [the notice file](./NOTICE).

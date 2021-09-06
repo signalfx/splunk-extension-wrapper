@@ -1,0 +1,11 @@
+Splunk Lambda Extension
+
+The AWS SDK for Go (github.com/aws/aws-sdk-go), developed by Amazon.com, licensed under Apache 2.0 license (https://github.com/aws/aws-sdk-go/blob/main/LICENSE.txt).
+
+Go errors helper (github.com/juju/errors), licensed under GNU LGPLv3 license (https://github.com/juju/errors/blob/master/LICENSE).
+
+Common Go Linux libraries (github.com/dropbox/godropbox), licensed under BSD 3-clause license (https://github.com/dropbox/godropbox/blob/master/license.txt).
+
+Behavioral tests in Go (github.com/smartystreets/goconvey), licensed under own (custom) license (https://github.com/smartystreets/goconvey/blob/master/LICENSE.md).
+
+Current versions set in the go.mod file.
