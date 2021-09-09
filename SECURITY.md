@@ -12,7 +12,7 @@ This project relies on a variety of external dependencies.
 These dependencies are monitored by
 [Dependabot](https://docs.github.com/en/code-security/supply-chain-security/configuring-dependabot-security-updates).
 Dependencies are [checked
-daily](https://github.com/signalfx/signalfx-extension-wrapper/blob/main/.github/dependabot.yml)
+daily](https://github.com/signalfx/splunk-extension-wrapper/blob/main/.github/dependabot.yml)
 and associated pull requests are opened automatically. Upgrading to the [latest
 layer release](https://github.com/signalfx/lambda-layer-versions/tree/master/lambda-extension)
 is recommended to ensure you have the latest security updates. If a security
