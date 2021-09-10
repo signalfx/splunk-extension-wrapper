@@ -34,7 +34,7 @@ clean:
 .PHONY: build
 build:
 	mkdir -p $(EXTENSIONS_DIR)
-	GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(EXTENSIONS_DIR) -ldflags "-s -w -X main.gitVersion=$(VERSION)" ./cmd/signalfx-extension-wrapper/*.go
+	GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(EXTENSIONS_DIR) -ldflags "-s -w -X main.gitVersion=$(VERSION)" ./cmd/splunk-extension-wrapper/*.go
 
 .PHONY: package
 package:

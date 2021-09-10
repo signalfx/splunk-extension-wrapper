@@ -96,14 +96,14 @@ For example, if you wish to include Splunk extension in a container image:
 
 
 **_Note:_** If you want to attach the layer without downloading it (for example, in AWS Console), refer to the Layer ARN from the same region as your monitored function.
-Check [the newest Splunk Extension for AWS Lambda versions](https://github.com/signalfx/lambda-layer-versions/blob/master/lambda-extension/lambda-extension-versions.md)
+Check [the newest Splunk Lambda Extension layer versions](https://github.com/signalfx/lambda-layer-versions/blob/master/lambda-extension/lambda-extension-versions.md)
 for the adequate ARN.
 
-It is important to tell the Extension Layer where to send data points. Use the environment variables of
-your Lambda Function to configure the Extension Layer.
+It is important to tell the Extension where to send data points. Use the environment variables of
+your Lambda Function to configure the Extension.
 See [the configuration section](#Configuration) for all configuration options.
 
-After you configure your AWS Lambda Extension Layer, you should see data points coming to your organization. Go
+After you configure your Splunk Lambda Extension, you should see data points coming to your organization. Go
 to [the dedicated dashboard](#Built-in-dashboard) to verify your setup. You can also build your own
 dashboard based on [the metrics supported](#Metrics).
 
@@ -113,7 +113,7 @@ If you cannot see incoming data points, check [the troubleshooting instructions]
 
 You can build your own dashboard based on the metrics supported, but look first 
 at [built-in dashboards](https://docs.signalfx.com/en/latest/getting-started/built-in-content/built-in-dashboards.html#built-in-dashboards). 
-A dashboard dedicated to the Splunk Extension for AWS Lambda is available under
+A dashboard dedicated to the Splunk Lambda Extension is available under
 the `AWS Lambda` dashboard group. Its name is 'Lambda Extension'. The dashboard demonstrates what
 can be achieved with [the metrics the Extension Layer supports](#Metrics), and could be a good
 starting point for creating your own dashboard.
@@ -125,7 +125,7 @@ the `Environment Details` chart.
 
 ## Metrics
 
-The list of all metrics reported by Splunk Extension for AWS Lambda:
+The list of all metrics reported by Splunk Lambda Extension:
 
 |Metric name|Type|Description|
 |---|---|---|
@@ -141,7 +141,7 @@ called. Another indication of longer execution time may be increased function co
 
 ### Dimensions
 
-The list of all dimensions associated with the metrics reported by the Splunk Extension for AWS Lambda:
+The list of all dimensions associated with the metrics reported by the Splunk Lambda Extension:
 
 |Dimension name|Description|
 |---|---|
@@ -157,7 +157,7 @@ The list of all dimensions associated with the metrics reported by the Splunk Ex
 
 ## Configuration
 
-The Splunk Extension for AWS Lambda can be configured by environment variables of a Lambda Function.
+The Splunk Lambda Extension can be configured by environment variables of a Lambda Function.
 
 Minimal configuration should include `SPLUNK_REALM` (or `SPLUNK_INGEST_URL`)
 and `SPLUNK_ACCESS_TOKEN` variables, so the layer can identify the organization to which it should
@@ -189,11 +189,10 @@ Below is the full list of supported environment variables:
 2. Make sure `SPLUNK_REALM` (or `SPLUNK_INGEST_URL`) and `SPLUNK_ACCESS_TOKEN` variables are
    correctly configured. Refer to [the configuration section](#Configuration).
 
-3. The Extension Layer working in the buffering mode may send data points with significant delay.
+3. The Extension working in the buffering mode may send data points with significant delay.
    Refer to [the fast ingest section](#Fast-ingest).
 
-4. Enable verbose logging of the Extension Layer as described
+4. Enable verbose logging of the Extension as described
    in [the configuration section](#Configuration).
    Check [Cloud Watch logs](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html)
    of your Lambda Function.   
-
