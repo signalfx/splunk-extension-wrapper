@@ -9,6 +9,7 @@
 </p>
 
 <p align="center">
+  <img alt="Beta" src="https://img.shields.io/badge/status-beta-informational?style=for-the-badge">
   <a href="https://github.com/signalfx/gdi-specification/releases/tag/v1.0.0">
     <img alt="Splunk GDI specification" src="https://img.shields.io/badge/GDI-1.0.0-blueviolet?style=for-the-badge">
   </a>
@@ -19,17 +20,19 @@
 
 
 
----
+# Splunk Lambda Extension
 
-# Overview
+> :construction: This project is currently in **BETA**. It is **officially supported** by Splunk. However, breaking changes **MAY** be introduced.
+
+## Overview
 
 The Splunk Lambda Extension provides customers with a simplified runtime-independent interface to collect high-resolution, low-latency metrics on AWS Lambda Function execution. The Extension Layer tracks metrics for cold start, invocation count, function lifetime and termination condition enabling customers to efficiently and effectively monitor their Lambda Functions with minimal overhead.
 
-# Get started & Troubleshooting
+## Get started and troubleshooting
 
 Go to the [docs directory](docs) for more details.
 
-# License and versioning
+## License and versioning
 
 The project is released under the terms of the Apache Software License version 2.0. For more details, see [the license file](./LICENSE).
 
