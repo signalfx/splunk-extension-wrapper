@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-const defaultRealm = "us0"
+const defaultRealm = ""
 const defaultIngestURL = ""
 const defaultToken = ""
 const defaultFastIngest = true
@@ -37,7 +37,8 @@ const ingestUrlFormat = "https://ingest.%s.signalfx.com"
 const minTokenLength = 10 // SFx Access Tokens are 22 chars long in 2019 but accept 10 or more chars just in case
 
 const realmEnv = "SPLUNK_REALM"
-const ingestURLEnv = "SPLUNK_INGEST_URL"
+const ingestURLEnv = "SPLUNK_METRICS_ENDPOINT"
+const ingestURLEnvDeprecated = "SPLUNK_INGEST_URL"
 const tokenEnv = "SPLUNK_ACCESS_TOKEN"
 const fastIngestEnv = "FAST_INGEST"
 const reportingDelayEnv = "REPORTING_RATE"
@@ -59,7 +60,7 @@ type Configuration struct {
 func New() Configuration {
 	configuration := Configuration{
 		SplunkRealm:      strOrDefault(realmEnv, defaultRealm),
-		SplunkMetricsUrl: strOrDefault(ingestURLEnv, defaultIngestURL),
+		SplunkMetricsUrl: strOrDefault(ingestURLEnv, strOrDefault(ingestURLEnvDeprecated, defaultIngestURL)),
 		SplunkToken:      strOrDefault(tokenEnv, defaultToken),
 		FastIngest:       boolOrDefault(fastIngestEnv, defaultFastIngest),
 		ReportingDelay:   durationOrDefault(reportingDelayEnv, defaultReportingDuration),
@@ -68,11 +69,19 @@ func New() Configuration {
 		HttpTracing:      boolOrDefault(httpTracingEnv, defaultHttpTracing),
 	}
 
-	if configuration.SplunkMetricsUrl == "" {
+	if configuration.SplunkMetricsUrl == "" && configuration.SplunkRealm != "" {
 		configuration.SplunkMetricsUrl = fmt.Sprintf(ingestUrlFormat, configuration.SplunkRealm)
 	}
 
-	configuration.SplunkMetricsUrl += "/v2/datapoint"
+	if configuration.SplunkMetricsUrl == "" {
+		log.Println("[ERROR] SPLUNK_REALM is set, but SPLUNK_ACCESS_TOKEN is not set. To export data to Splunk Observability Cloud, define a Splunk Access Token.")
+	} else {
+		configuration.SplunkMetricsUrl += "/v2/datapoint"
+	}
+
+	if configuration.SplunkRealm != "" && configuration.SplunkToken == "" {
+		log.Println("[ERROR] Exporter endpoint must be set when SPLUNK_REALM is not set. To export data, set either a realm and access token or a custom exporter endpoint.")
+	}
 
 	return configuration
 }
@@ -108,23 +117,29 @@ func strOrDefault(key, d string) string {
 }
 
 func durationOrDefault(key string, d time.Duration) time.Duration {
-	str := strOrDefault(key, "nan")
+	str := strOrDefault(key, "")
+	if str == "" {
+		return d
+	}
 
 	if seconds, err := strconv.Atoi(str); err == nil {
 		return time.Second * time.Duration(seconds)
 	}
 
-	log.Printf("can't parse number of seconds: %s\n", str)
+	log.Printf("can't parse number of seconds for key: %s, %s\n", key, str)
 	return d
 }
 
 func boolOrDefault(key string, d bool) bool {
 	str := strOrDefault(key, "")
+	if str == "" {
+		return d
+	}
 
 	if trueOrFalse, err := strconv.ParseBool(str); err == nil {
 		return trueOrFalse
 	}
 
-	log.Printf("can't parse bool: %s\n", str)
+	log.Printf("can't parse bool for key: %s, %s\n", key, str)
 	return d
 }
