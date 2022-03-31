@@ -112,7 +112,7 @@ If you cannot see incoming data points, check [the troubleshooting instructions]
 ## Built-in dashboard
 
 You can build your own dashboard based on the metrics supported, but look first 
-at [built-in dashboards](https://docs.signalfx.com/en/latest/getting-started/built-in-content/built-in-dashboards.html#built-in-dashboards). 
+at [built-in dashboards](https://docs.splunk.com/Observability/data-visualization/dashboards/built-in-dashboards.html#built-in-dashboards). 
 A dashboard dedicated to the Splunk Lambda Extension is available under
 the `AWS Lambda` dashboard group. Its name is 'Lambda Extension'. The dashboard demonstrates what
 can be achieved with [the metrics the Extension Layer supports](#Metrics), and could be a good
@@ -175,7 +175,6 @@ Below is the full list of supported environment variables:
 |REPORTING_TIMEOUT|`5`|An integer (seconds). Minimum value is 1s.|Specifies metric send operation timeout.|
 |VERBOSE|`false`|`true` or `false`|Enables verbose logging. Logs are stored in a CloudWatch Logs group associated with a Lambda Function.|
 |HTTP_TRACING|`false`|`true` or `false`|Enables detailed logs on HTTP calls to Splunk.|
-
 
 ## Troubleshooting
 
