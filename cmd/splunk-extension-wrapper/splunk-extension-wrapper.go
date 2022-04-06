@@ -34,13 +34,15 @@ import (
 var gitVersion string
 
 func main() {
-	initLogging()
+	configuration := config.New()
+
+	initLogging(&configuration)
 
 	ossignal.Watch()
 
 	m := metrics.New()
 
-	shutdownCondition := registerApiAndStartMainLoop(m)
+	shutdownCondition := registerApiAndStartMainLoop(m, &configuration)
 
 	if shutdownCondition.IsError() {
 		log.SetOutput(os.Stderr)
@@ -52,7 +54,7 @@ func main() {
 	m.Shutdown(shutdownCondition)
 }
 
-func registerApiAndStartMainLoop(m *metrics.MetricEmitter) (sc shutdown.Condition) {
+func registerApiAndStartMainLoop(m *metrics.MetricEmitter, configuration *config.Configuration) (sc shutdown.Condition) {
 	var api *extensionapi.RegisteredApi
 
 	defer func() {
@@ -68,7 +70,7 @@ func registerApiAndStartMainLoop(m *metrics.MetricEmitter) (sc shutdown.Conditio
 	api, sc = extensionapi.Register(extensionName())
 
 	if sc == nil {
-		sc = mainLoop(api, m)
+		sc = mainLoop(api, m, configuration)
 	}
 
 	if sc != nil && sc.IsError() && api != nil {
@@ -78,14 +80,14 @@ func registerApiAndStartMainLoop(m *metrics.MetricEmitter) (sc shutdown.Conditio
 	return
 }
 
-func mainLoop(api *extensionapi.RegisteredApi, m *metrics.MetricEmitter) (sc shutdown.Condition) {
+func mainLoop(api *extensionapi.RegisteredApi, m *metrics.MetricEmitter, configuration *config.Configuration) (sc shutdown.Condition) {
 	m.SetFunction(api.FunctionName, api.FunctionVersion)
 
 	var event *extensionapi.Event
 	event, sc = api.NextEvent()
 
 	for sc == nil {
-		sc = m.Invoked(event.InvokedFunctionArn)
+		sc = m.Invoked(event.InvokedFunctionArn, configuration.SplunkFailFast)
 		if sc == nil {
 			event, sc = api.NextEvent()
 		}
@@ -94,14 +96,12 @@ func mainLoop(api *extensionapi.RegisteredApi, m *metrics.MetricEmitter) (sc shu
 	return
 }
 
-func initLogging() {
+func initLogging(configuration *config.Configuration) {
 	en := extensionName()
 	log.SetPrefix("[" + en + "] ")
 	log.SetFlags(log.Lmsgprefix)
 
 	log.Printf("%v, version: %v", extensionName(), gitVersion)
-
-	configuration := config.New()
 
 	if !configuration.Verbose {
 		log.SetOutput(ioutil.Discard)

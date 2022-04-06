@@ -31,6 +31,7 @@ const defaultReportingDuration = time.Duration(15) * time.Second
 const defaultReportingTimeout = time.Duration(5) * time.Second
 const defaultVerbose = false
 const defaultHttpTracing = false
+const defaultFailFast = false
 
 const ingestUrlFormat = "https://ingest.%s.signalfx.com"
 
@@ -45,6 +46,7 @@ const reportingDelayEnv = "REPORTING_RATE"
 const reportingTimeoutEnv = "REPORTING_TIMEOUT"
 const verboseEnv = "VERBOSE"
 const httpTracingEnv = "HTTP_TRACING"
+const failFastEnv = "SPLUNK_EXPERIMENTAL_FAIL_FAST"
 
 type Configuration struct {
 	SplunkRealm      string
@@ -55,6 +57,7 @@ type Configuration struct {
 	ReportingTimeout time.Duration
 	Verbose          bool
 	HttpTracing      bool
+	SplunkFailFast 	 bool
 }
 
 func New() Configuration {
@@ -67,6 +70,7 @@ func New() Configuration {
 		ReportingTimeout: durationOrDefault(reportingTimeoutEnv, defaultReportingTimeout),
 		Verbose:          boolOrDefault(verboseEnv, defaultVerbose),
 		HttpTracing:      boolOrDefault(httpTracingEnv, defaultHttpTracing),
+		SplunkFailFast:   boolOrDefault(failFastEnv, defaultFailFast),
 	}
 
 	if configuration.SplunkMetricsUrl == "" && configuration.SplunkRealm != "" {

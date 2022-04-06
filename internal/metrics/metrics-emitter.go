@@ -76,7 +76,7 @@ func New() *MetricEmitter {
 	return emitter
 }
 
-func (emitter *MetricEmitter) Invoked(functionArn string) shutdown.Condition {
+func (emitter *MetricEmitter) Invoked(functionArn string, failFast bool) shutdown.Condition {
 	if counter, found := emitter.arnToCounter[functionArn]; found {
 		counter.invoked()
 	} else {
@@ -91,7 +91,7 @@ func (emitter *MetricEmitter) Invoked(functionArn string) shutdown.Condition {
 		emitter.started = true
 	}
 
-	return emitter.tryToSendOut()
+	return emitter.tryToSendOut(failFast)
 }
 
 func (emitter *MetricEmitter) SetFunction(functionName, functionVersion string) {
@@ -127,7 +127,7 @@ func (emitter MetricEmitter) arnWithVersion(parsedArn arn.ARN) string {
 	return parsedArn.String()
 }
 
-func (emitter *MetricEmitter) tryToSendOut() shutdown.Condition {
+func (emitter *MetricEmitter) tryToSendOut(failFast bool) shutdown.Condition {
 	if !emitter.sendOutTicker.Tick() {
 		return nil
 	}
@@ -136,8 +136,13 @@ func (emitter *MetricEmitter) tryToSendOut() shutdown.Condition {
 	if err == nil {
 		return nil
 	}
-
-	return shutdown.Metric(fmt.Sprintf("failed to send metrics: %v", err))
+	message := fmt.Sprintf("failed to send metrics: %v", err)
+	if failFast {
+		return shutdown.Metric(message)
+	} else {
+		log.Println(message)
+		return nil
+	}
 }
 
 func (emitter *MetricEmitter) registerCounter(functionArn string) {
