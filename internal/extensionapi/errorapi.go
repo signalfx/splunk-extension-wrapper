@@ -41,7 +41,7 @@ func (api RegisteredApi) reportError(endpoint, errorType string) {
 		return
 	}
 
-	req.Header.Set("Lambda-Extension-Identifier", api.extensionId)
+	req.Header.Set("Lambda-Extension-Identifier", api.ExtensionId)
 	req.Header.Set("Lambda-Extension-Function-Error-Type", errorType)
 
 	resp, err := http.DefaultClient.Do(req)

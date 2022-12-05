@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/splunk/lambda-extension/internal/config"
 	"github.com/splunk/lambda-extension/internal/extensionapi"
+	"github.com/splunk/lambda-extension/internal/logs"
 	"github.com/splunk/lambda-extension/internal/metrics"
 	"github.com/splunk/lambda-extension/internal/ossignal"
 	"github.com/splunk/lambda-extension/internal/shutdown"
@@ -68,6 +69,7 @@ func registerApiAndStartMainLoop(m *metrics.MetricEmitter, configuration *config
 	}()
 
 	api, sc = extensionapi.Register(extensionName())
+	logs.SubscribeToLogs(api.ExtensionId)
 
 	if sc == nil {
 		sc = mainLoop(api, m, configuration)

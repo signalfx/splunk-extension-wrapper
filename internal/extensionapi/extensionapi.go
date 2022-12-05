@@ -46,7 +46,7 @@ type Event struct {
 type RegisteredApi struct {
 	ExtensionName string
 
-	extensionId string
+	ExtensionId string
 
 	registerResponse
 }
@@ -110,7 +110,7 @@ func Register(name string) (*RegisteredApi, shutdown.Condition) {
 
 	return &RegisteredApi{
 		ExtensionName:    name,
-		extensionId:      id[0],
+		ExtensionId:      id[0],
 		registerResponse: *regResponse}, nil
 }
 
@@ -123,7 +123,7 @@ func (api RegisteredApi) NextEvent() (*Event, shutdown.Condition) {
 		return nil, shutdown.Api(fmt.Sprintf("can't create http request: %v", err))
 	}
 
-	req.Header.Set("Lambda-Extension-Identifier", api.extensionId)
+	req.Header.Set("Lambda-Extension-Identifier", api.ExtensionId)
 
 	resp, err := http.DefaultClient.Do(req)
 
