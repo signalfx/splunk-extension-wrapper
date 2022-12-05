@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"go.opentelemetry.io/collector/exporter/otlpexporter"
 )
 
 func inboundHttp(w http.ResponseWriter, req *http.Request) {
@@ -58,6 +59,9 @@ type LogSubscribeRequest struct {
 func SubscribeToLogs(apiExtensionId string) {
 	fmt.Println("JB logs init")
 	startServer()
+
+	_ = otlpexporter.NewFactory()
+
 	apiHost := os.Getenv("AWS_LAMBDA_RUNTIME_API")
 
         subscribeUrl := fmt.Sprintf("http://%v/2022-07-01/telemetry", apiHost)
