@@ -23,7 +23,6 @@ import (
 	"path"
 	"runtime"
 	"strings"
-
 	"github.com/splunk/lambda-extension/internal/config"
 	"github.com/splunk/lambda-extension/internal/extensionapi"
 	"github.com/splunk/lambda-extension/internal/metrics"
