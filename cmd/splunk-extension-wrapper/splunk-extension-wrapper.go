@@ -17,17 +17,18 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/splunk/lambda-extension/internal/config"
-	"github.com/splunk/lambda-extension/internal/extensionapi"
-	"github.com/splunk/lambda-extension/internal/metrics"
-	"github.com/splunk/lambda-extension/internal/ossignal"
-	"github.com/splunk/lambda-extension/internal/shutdown"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"runtime"
 	"strings"
+
+	"github.com/splunk/lambda-extension/internal/config"
+	"github.com/splunk/lambda-extension/internal/extensionapi"
+	"github.com/splunk/lambda-extension/internal/metrics"
+	"github.com/splunk/lambda-extension/internal/ossignal"
+	"github.com/splunk/lambda-extension/internal/shutdown"
 )
 
 // the correct value is set by the go linker (it's done during build using "ldflags")
@@ -67,7 +68,7 @@ func registerApiAndStartMainLoop(m *metrics.MetricEmitter, configuration *config
 		}
 	}()
 
-	api, sc = extensionapi.Register(extensionName())
+	api, sc = extensionapi.Register(extensionName(), configuration)
 
 	if sc == nil {
 		sc = mainLoop(api, m, configuration)

@@ -16,12 +16,15 @@ package extensionapi
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/splunk/lambda-extension/internal/shutdown"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/splunk/lambda-extension/internal/config"
+	"github.com/splunk/lambda-extension/internal/shutdown"
 )
 
 const (
@@ -51,7 +54,7 @@ type RegisteredApi struct {
 	registerResponse
 }
 
-func Register(name string) (*RegisteredApi, shutdown.Condition) {
+func Register(name string, configuration *config.Configuration) (*RegisteredApi, shutdown.Condition) {
 	log.Println("Registering...")
 
 	rb, err := json.Marshal(map[string][]string{
@@ -61,6 +64,11 @@ func Register(name string) (*RegisteredApi, shutdown.Condition) {
 		return nil, shutdown.Api(fmt.Sprintf("can't marshall body: %v", err))
 	}
 
+	transportCfg := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: configuration.InsecureSsl},
+	}
+	client := &http.Client{Transport: transportCfg}
+
 	req, err := http.NewRequest(http.MethodPost, endpoints.register, bytes.NewBuffer(rb))
 
 	if err != nil {
@@ -69,7 +77,7 @@ func Register(name string) (*RegisteredApi, shutdown.Condition) {
 
 	req.Header.Set("Lambda-Extension-Name", name)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 
 	if err != nil {
 		return nil, shutdown.Api(fmt.Sprintf("can't register: %v", err))
