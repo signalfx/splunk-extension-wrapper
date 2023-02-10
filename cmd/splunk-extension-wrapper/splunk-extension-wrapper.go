@@ -15,6 +15,11 @@
 package main
 
 import (
+	"github.com/splunk/lambda-extension/internal/config"
+	"github.com/splunk/lambda-extension/internal/extensionapi"
+	"github.com/splunk/lambda-extension/internal/metrics"
+	"github.com/splunk/lambda-extension/internal/ossignal"
+	"github.com/splunk/lambda-extension/internal/shutdown"
 	"bufio"
 	"fmt"
 	"io/ioutil"
@@ -23,11 +28,6 @@ import (
 	"path"
 	"runtime"
 	"strings"
-	"github.com/splunk/lambda-extension/internal/config"
-	"github.com/splunk/lambda-extension/internal/extensionapi"
-	"github.com/splunk/lambda-extension/internal/metrics"
-	"github.com/splunk/lambda-extension/internal/ossignal"
-	"github.com/splunk/lambda-extension/internal/shutdown"
 )
 
 // the correct value is set by the go linker (it's done during build using "ldflags")
