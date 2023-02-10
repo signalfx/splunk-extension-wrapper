@@ -22,7 +22,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-
 	"github.com/splunk/lambda-extension/internal/config"
 	"github.com/splunk/lambda-extension/internal/shutdown"
 )
