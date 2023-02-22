@@ -175,7 +175,7 @@ Below is the full list of supported environment variables:
 |REPORTING_TIMEOUT|`5`|An integer (seconds). Minimum value is 1s.| Specifies metric send operation timeout.                                                                                                                                                                                                                                |
 |VERBOSE|`false`|`true` or `false`| Enables verbose logging. Logs are stored in a CloudWatch Logs group associated with a Lambda Function.                                                                                                                                                                  |
 |HTTP_TRACING|`false`|`true` or `false`| Enables detailed logs on HTTP calls to Splunk.                                                                                                                                                                                                                          |
-|INSECURE_SSL|`false`|`true` or `false`| Enables skip check validation ssl on HTTP calls to Splunk.                                                                                                                                                                                             |
+|INSECURE_HTTPS|`false`|`true` or `false`| Enables skip certificate validation for HTTPS calls to Splunk. Commonly used with the SPLUNK_INGEST_URL                                                                                                                                                                                            |
 
 ## Troubleshooting
 

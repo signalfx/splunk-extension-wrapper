@@ -64,7 +64,7 @@ func Register(name string, configuration *config.Configuration) (*RegisteredApi,
 	}
 
 	transportCfg := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: configuration.InsecureSsl},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: configuration.InsecureHTTPS},
 	}
 	client := &http.Client{Transport: transportCfg}
 

@@ -32,7 +32,7 @@ const defaultReportingTimeout = time.Duration(5) * time.Second
 const defaultVerbose = false
 const defaultHttpTracing = false
 const defaultFailFast = false
-const defaultInsecureSsl = false
+const defaultInsecureHTTPS = false
 
 const ingestUrlFormat = "https://ingest.%s.signalfx.com"
 
@@ -48,7 +48,7 @@ const reportingTimeoutEnv = "REPORTING_TIMEOUT"
 const verboseEnv = "VERBOSE"
 const httpTracingEnv = "HTTP_TRACING"
 const failFastEnv = "SPLUNK_EXPERIMENTAL_FAIL_FAST"
-const insecureSslEnv = "INSECURE_SSL"
+const insecureHTTPSEnv = "INSECURE_HTTPS"
 
 type Configuration struct {
 	SplunkRealm      string
@@ -60,7 +60,7 @@ type Configuration struct {
 	Verbose          bool
 	HttpTracing      bool
 	SplunkFailFast   bool
-	InsecureSsl      bool
+	InsecureHTTPS    bool
 }
 
 func New() Configuration {
@@ -74,7 +74,7 @@ func New() Configuration {
 		Verbose:          boolOrDefault(verboseEnv, defaultVerbose),
 		HttpTracing:      boolOrDefault(httpTracingEnv, defaultHttpTracing),
 		SplunkFailFast:   boolOrDefault(failFastEnv, defaultFailFast),
-		InsecureSsl:      boolOrDefault(insecureSslEnv, defaultInsecureSsl),
+		InsecureHTTPS:      boolOrDefault(insecureHTTPSEnv, defaultInsecureHTTPS),
 	}
 
 	if configuration.SplunkMetricsUrl == "" && configuration.SplunkRealm != "" {
@@ -106,7 +106,7 @@ func (c Configuration) String() string {
 	addLine("Reporting Timeout  = %v", c.ReportingTimeout.Seconds())
 	addLine("Verbose            = %v", c.Verbose)
 	addLine("HTTP Tracing       = %v", c.HttpTracing)
-	addLine("Insecure SSL 		= %v", c.InsecureSsl)
+	addLine("InsecureHTTPS 		= %v", c.InsecureHTTPS)
 
 	return builder.String()
 }
