@@ -107,6 +107,7 @@ func (c Configuration) String() string {
 	addLine("Verbose            = %v", c.Verbose)
 	addLine("HTTP Tracing       = %v", c.HttpTracing)
 	addLine("InsecureHTTPS      = %v", c.HttpTracing)
+
 	return builder.String()
 }
 
