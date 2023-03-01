@@ -106,7 +106,7 @@ func (c Configuration) String() string {
 	addLine("Reporting Timeout  = %v", c.ReportingTimeout.Seconds())
 	addLine("Verbose            = %v", c.Verbose)
 	addLine("HTTP Tracing       = %v", c.HttpTracing)
-	addLine("InsecureHTTPS      = %v", c.HttpTracing)
+	addLine("InsecureHTTPS      = %v", c.InsecureHTTPS)
 
 	return builder.String()
 }
