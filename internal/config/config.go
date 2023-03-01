@@ -74,7 +74,7 @@ func New() Configuration {
 		Verbose:          boolOrDefault(verboseEnv, defaultVerbose),
 		HttpTracing:      boolOrDefault(httpTracingEnv, defaultHttpTracing),
 		SplunkFailFast:   boolOrDefault(failFastEnv, defaultFailFast),
-		InsecureHTTPS:      boolOrDefault(insecureHTTPSEnv, defaultInsecureHTTPS),
+		InsecureHTTPS:    boolOrDefault(insecureHTTPSEnv, defaultInsecureHTTPS),
 	}
 
 	if configuration.SplunkMetricsUrl == "" && configuration.SplunkRealm != "" {
