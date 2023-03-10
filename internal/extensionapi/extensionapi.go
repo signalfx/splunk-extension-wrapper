@@ -19,11 +19,11 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/splunk/lambda-extension/internal/config"
+	"github.com/splunk/lambda-extension/internal/shutdown"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"github.com/splunk/lambda-extension/internal/config"
-	"github.com/splunk/lambda-extension/internal/shutdown"
 )
 
 const (
@@ -64,7 +64,7 @@ func Register(name string, configuration *config.Configuration) (*RegisteredApi,
 	}
 
 	transportCfg := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: configuration.InsecureHTTPS},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: configuration.InsecureSkipHTTPSVerify},
 	}
 	client := &http.Client{Transport: transportCfg}
 
