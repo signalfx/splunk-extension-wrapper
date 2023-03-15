@@ -32,6 +32,7 @@ const defaultReportingTimeout = time.Duration(5) * time.Second
 const defaultVerbose = false
 const defaultHttpTracing = false
 const defaultFailFast = false
+const defaultInsecureSkipHTTPSVerify = false
 
 const ingestUrlFormat = "https://ingest.%s.signalfx.com"
 
@@ -47,30 +48,33 @@ const reportingTimeoutEnv = "REPORTING_TIMEOUT"
 const verboseEnv = "VERBOSE"
 const httpTracingEnv = "HTTP_TRACING"
 const failFastEnv = "SPLUNK_EXPERIMENTAL_FAIL_FAST"
+const insecureSkipHTTPSVerifyEnv = "INSECURE_SKIP_HTTPS_VERIFY"
 
 type Configuration struct {
-	SplunkRealm      string
-	SplunkMetricsUrl string
-	SplunkToken      string
-	FastIngest       bool
-	ReportingDelay   time.Duration
-	ReportingTimeout time.Duration
-	Verbose          bool
-	HttpTracing      bool
-	SplunkFailFast 	 bool
+	SplunkRealm             string
+	SplunkMetricsUrl        string
+	SplunkToken             string
+	FastIngest              bool
+	ReportingDelay          time.Duration
+	ReportingTimeout        time.Duration
+	Verbose                 bool
+	HttpTracing             bool
+	SplunkFailFast          bool
+	InsecureSkipHTTPSVerify bool
 }
 
 func New() Configuration {
 	configuration := Configuration{
-		SplunkRealm:      strOrDefault(realmEnv, defaultRealm),
-		SplunkMetricsUrl: strOrDefault(ingestURLEnv, strOrDefault(ingestURLEnvDeprecated, defaultIngestURL)),
-		SplunkToken:      strOrDefault(tokenEnv, defaultToken),
-		FastIngest:       boolOrDefault(fastIngestEnv, defaultFastIngest),
-		ReportingDelay:   durationOrDefault(reportingDelayEnv, defaultReportingDuration),
-		ReportingTimeout: durationOrDefault(reportingTimeoutEnv, defaultReportingTimeout),
-		Verbose:          boolOrDefault(verboseEnv, defaultVerbose),
-		HttpTracing:      boolOrDefault(httpTracingEnv, defaultHttpTracing),
-		SplunkFailFast:   boolOrDefault(failFastEnv, defaultFailFast),
+		SplunkRealm:             strOrDefault(realmEnv, defaultRealm),
+		SplunkMetricsUrl:        strOrDefault(ingestURLEnv, strOrDefault(ingestURLEnvDeprecated, defaultIngestURL)),
+		SplunkToken:             strOrDefault(tokenEnv, defaultToken),
+		FastIngest:              boolOrDefault(fastIngestEnv, defaultFastIngest),
+		ReportingDelay:          durationOrDefault(reportingDelayEnv, defaultReportingDuration),
+		ReportingTimeout:        durationOrDefault(reportingTimeoutEnv, defaultReportingTimeout),
+		Verbose:                 boolOrDefault(verboseEnv, defaultVerbose),
+		HttpTracing:             boolOrDefault(httpTracingEnv, defaultHttpTracing),
+		SplunkFailFast:          boolOrDefault(failFastEnv, defaultFailFast),
+		InsecureSkipHTTPSVerify: boolOrDefault(insecureSkipHTTPSVerifyEnv, defaultInsecureSkipHTTPSVerify),
 	}
 
 	if configuration.SplunkMetricsUrl == "" && configuration.SplunkRealm != "" {
@@ -94,14 +98,15 @@ func (c Configuration) String() string {
 	builder := strings.Builder{}
 	addLine := func(format string, arg interface{}) { builder.WriteString(fmt.Sprintf(format+"\n", arg)) }
 
-	addLine("Splunk Realm       = %v", c.SplunkRealm)
-	addLine("Splunk Metrics URL = %v", c.SplunkMetricsUrl)
-	addLine("Splunk Token       = %v", obfuscatedToken(c.SplunkToken))
-	addLine("Fast Ingest        = %v", c.FastIngest)
-	addLine("Reporting Delay    = %v", c.ReportingDelay.Seconds())
-	addLine("Reporting Timeout  = %v", c.ReportingTimeout.Seconds())
-	addLine("Verbose            = %v", c.Verbose)
-	addLine("HTTP Tracing       = %v", c.HttpTracing)
+	addLine("Splunk Realm           = %v", c.SplunkRealm)
+	addLine("Splunk Metrics URL     = %v", c.SplunkMetricsUrl)
+	addLine("Splunk Token           = %v", obfuscatedToken(c.SplunkToken))
+	addLine("Fast Ingest            = %v", c.FastIngest)
+	addLine("Reporting Delay        = %v", c.ReportingDelay.Seconds())
+	addLine("Reporting Timeout      = %v", c.ReportingTimeout.Seconds())
+	addLine("Verbose                = %v", c.Verbose)
+	addLine("HTTP Tracing           = %v", c.HttpTracing)
+	addLine("InsecureSkipHTTPSVerify= %v", c.InsecureSkipHTTPSVerify)
 
 	return builder.String()
 }
