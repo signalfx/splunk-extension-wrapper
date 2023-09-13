@@ -44,7 +44,7 @@ jobs:
         run: |
           echo "RUNNING TESTS"
           mkdir ~/testresults
-          (cd /tmp; GO111MODULE=on go get gotest.tools/gotestsum)
+          (cd /tmp; GO111MODULE=on go install gotest.tools/gotestsum@latest)
           CGO_ENABLED=0 gotestsum --format short-verbose --junitfile ~/testresults/unit.xml --raw-command -- go test --json -p 4 ./...
           echo "BUILDING"
           make
