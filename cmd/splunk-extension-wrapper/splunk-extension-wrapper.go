@@ -36,6 +36,8 @@ var gitVersion string
 const enabledKey = "SPLUNK_EXTENSION_WRAPPER_ENABLED"
 const extensionNameKey = "SPLUNK_EXTENSION_WRAPPER_NAME"
 
+compilation failure
+
 func enabled() (bool) {
 	s := strings.ToLower(os.Getenv(enabledKey))
 	return s != "0" && s != "false"
