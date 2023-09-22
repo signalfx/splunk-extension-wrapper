@@ -50,6 +50,9 @@ func main() {
 
 	ossignal.Watch()
 
+	// When we are running "disabled", don't actually try to emit metrics.
+	// A cleaner design for this would use an interface with a stub implementation,
+	// but 3 or 4 nil checks will do for now, since they're all in one file
 	var m *metrics.MetricEmitter = nil
 	if enabled {
 		m = metrics.New()
