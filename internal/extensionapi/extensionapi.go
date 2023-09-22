@@ -54,7 +54,7 @@ type RegisteredApi struct {
 }
 
 func Register(enabled bool, name string, configuration *config.Configuration) (*RegisteredApi, shutdown.Condition) {
-	log.Println("Registering...")
+	log.Println("Registering... " + name)
 	events := []string{ shutdownType }
 	if enabled {
 		events = []string{ invokeType, shutdownType }
