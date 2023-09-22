@@ -43,7 +43,6 @@ func enabled() (bool) {
 
 func main() {
 	enabled := enabled()
-	fmt.Println("starting extension enabled? ", enabled)
 
 	configuration := config.New()
 

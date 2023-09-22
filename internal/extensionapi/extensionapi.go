@@ -55,6 +55,8 @@ type RegisteredApi struct {
 
 func Register(enabled bool, name string, configuration *config.Configuration) (*RegisteredApi, shutdown.Condition) {
 	log.Println("Registering... " + name)
+        // extensions have to at least call Register and Next; they can't actually be "disabled"
+	// so if we are not enabled, at least subscribe to SHUTDOWN
 	events := []string{ shutdownType }
 	if enabled {
 		events = []string{ invokeType, shutdownType }
