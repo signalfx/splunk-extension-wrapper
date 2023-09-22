@@ -66,6 +66,8 @@ func Register(enabled bool, name string, configuration *config.Configuration) (*
 	if err != nil {
 		return nil, shutdown.Api(fmt.Sprintf("can't marshall body: %v", err))
 	}
+	log.Println("events "+string(rb))
+	fmt.Println("yes, here")
 
 	transportCfg := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: configuration.InsecureSkipHTTPSVerify},
