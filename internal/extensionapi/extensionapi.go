@@ -66,8 +66,6 @@ func Register(enabled bool, name string, configuration *config.Configuration) (*
 	if err != nil {
 		return nil, shutdown.Api(fmt.Sprintf("can't marshall body: %v", err))
 	}
-	log.Println("events "+string(rb))
-	fmt.Println("yes, here")
 
 	transportCfg := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: configuration.InsecureSkipHTTPSVerify},
@@ -100,7 +98,7 @@ func Register(enabled bool, name string, configuration *config.Configuration) (*
 
 	log.Printf("Register response: %v\n", body)
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
 		return nil, shutdown.Api("failed to register, API returned: " + resp.Status)
 	}
 

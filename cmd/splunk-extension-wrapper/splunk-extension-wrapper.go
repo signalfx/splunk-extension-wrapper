@@ -43,7 +43,7 @@ func enabled() (bool) {
 
 func main() {
 	enabled := enabled()
-	fmt.Println("starting extension enabled? %t", enabled)
+	fmt.Println("starting extension enabled? ", enabled)
 
 	configuration := config.New()
 
@@ -65,7 +65,9 @@ func main() {
 	log.Println("shutdown reason:", shutdownCondition.Reason())
 	log.Println("shutdown message:", shutdownCondition.Message())
 
-	m.Shutdown(shutdownCondition)
+	if m != nil {
+		m.Shutdown(shutdownCondition)
+	}
 }
 
 func registerApiAndStartMainLoop(enabled bool, m *metrics.MetricEmitter, configuration *config.Configuration) (sc shutdown.Condition) {
@@ -141,6 +143,5 @@ func extensionName() string {
 	if name == "" {
 		name = path.Base(os.Args[0])
 	}
-	fmt.Println("extension name is "+name)
 	return name
 }
