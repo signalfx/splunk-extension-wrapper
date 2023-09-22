@@ -97,7 +97,9 @@ func registerApiAndStartMainLoop(enabled bool, m *metrics.MetricEmitter, configu
 }
 
 func mainLoop(api *extensionapi.RegisteredApi, m *metrics.MetricEmitter, configuration *config.Configuration) (sc shutdown.Condition) {
-	m.SetFunction(api.FunctionName, api.FunctionVersion)
+	if m != nil {
+		m.SetFunction(api.FunctionName, api.FunctionVersion)
+	}
 
 	var event *extensionapi.Event
 	event, sc = api.NextEvent()

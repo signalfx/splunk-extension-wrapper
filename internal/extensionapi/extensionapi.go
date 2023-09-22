@@ -98,7 +98,7 @@ func Register(enabled bool, name string, configuration *config.Configuration) (*
 
 	log.Printf("Register response: %v\n", body)
 
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
+	if resp.StatusCode != http.StatusOK {
 		return nil, shutdown.Api("failed to register, API returned: " + resp.Status)
 	}
 
