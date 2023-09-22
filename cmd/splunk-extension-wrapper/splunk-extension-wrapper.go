@@ -140,5 +140,6 @@ func extensionName() string {
 	if name == "" {
 		name = path.Base(os.Args[0])
 	}
+	fmt.Println("extension name is "+name)
 	return name
 }
