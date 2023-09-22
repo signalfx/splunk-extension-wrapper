@@ -33,16 +33,29 @@ import (
 // the correct value is set by the go linker (it's done during build using "ldflags")
 var gitVersion string
 
+const enabledKey = "SPLUNK_EXTENSION_WRAPPER_ENABLED"
+const extensionNameKey = "SPLUNK_EXTENSION_WRAPPER_NAME"
+
+func enabled() (bool) {
+	s := strings.ToLower(os.Getenv(enabledKey))
+	return s != "0" && s != "false"
+}
+
 func main() {
+	enabled := enabled()
+
 	configuration := config.New()
 
 	initLogging(&configuration)
 
 	ossignal.Watch()
 
-	m := metrics.New()
+	var m *metrics.MetricEmitter = nil
+	if enabled {
+		m = metrics.New()
+	}
 
-	shutdownCondition := registerApiAndStartMainLoop(m, &configuration)
+	shutdownCondition := registerApiAndStartMainLoop(enabled, m, &configuration)
 
 	if shutdownCondition.IsError() {
 		log.SetOutput(os.Stderr)
@@ -54,7 +67,7 @@ func main() {
 	m.Shutdown(shutdownCondition)
 }
 
-func registerApiAndStartMainLoop(m *metrics.MetricEmitter, configuration *config.Configuration) (sc shutdown.Condition) {
+func registerApiAndStartMainLoop(enabled bool, m *metrics.MetricEmitter, configuration *config.Configuration) (sc shutdown.Condition) {
 	var api *extensionapi.RegisteredApi
 
 	defer func() {
@@ -67,7 +80,7 @@ func registerApiAndStartMainLoop(m *metrics.MetricEmitter, configuration *config
 		}
 	}()
 
-	api, sc = extensionapi.Register(extensionName(), configuration)
+	api, sc = extensionapi.Register(enabled, extensionName(), configuration)
 
 	if sc == nil {
 		sc = mainLoop(api, m, configuration)
@@ -87,7 +100,9 @@ func mainLoop(api *extensionapi.RegisteredApi, m *metrics.MetricEmitter, configu
 	event, sc = api.NextEvent()
 
 	for sc == nil {
-		sc = m.Invoked(event.InvokedFunctionArn, configuration.SplunkFailFast)
+		if m != nil {
+			sc = m.Invoked(event.InvokedFunctionArn, configuration.SplunkFailFast)
+		}
 		if sc == nil {
 			event, sc = api.NextEvent()
 		}
@@ -121,5 +136,9 @@ func initLogging(configuration *config.Configuration) {
 }
 
 func extensionName() string {
-	return path.Base(os.Args[0])
+	name := os.Getenv(extensionNameKey)
+	if name == "" {
+		name = path.Base(os.Args[0])
+	}
+	return name
 }

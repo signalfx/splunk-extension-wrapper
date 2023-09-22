@@ -53,11 +53,15 @@ type RegisteredApi struct {
 	registerResponse
 }
 
-func Register(name string, configuration *config.Configuration) (*RegisteredApi, shutdown.Condition) {
+func Register(enabled bool, name string, configuration *config.Configuration) (*RegisteredApi, shutdown.Condition) {
 	log.Println("Registering...")
+	events := []string{ shutdownType }
+	if enabled {
+		events = []string{ invokeType, shutdownType }
+	}
 
 	rb, err := json.Marshal(map[string][]string{
-		"events": {invokeType, shutdownType}})
+		"events": events})
 
 	if err != nil {
 		return nil, shutdown.Api(fmt.Sprintf("can't marshall body: %v", err))
