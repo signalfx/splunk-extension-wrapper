@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # Copyright Splunk Inc.
 #
@@ -19,7 +19,9 @@ echo "Installing dependencies"
 [[ -d /go/pkg/mod/cache ]] && exit 0
 # retry up to 3 times in case of network issues
 for i in $(seq 1 3); do
+    set +e
     go mod download && break
+    set -e
     sleep 10
 done
 
