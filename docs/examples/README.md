@@ -25,8 +25,8 @@ cd docs/examples
 ```
 
 Prepare:
-* a realm where your organization resides (you can find it in [your profile](https://docs.signalfx.com/en/latest/admin-guide/tokens.html#access-tokens))
-* [an access token](https://docs.signalfx.com/en/latest/admin-guide/tokens.html#access-tokens) of your organization
+* the signalfx realm where your organization resides (e.g., `us0`)
+* [an access token](https://docs.splunk.com/observability/en/admin/authentication/authentication-tokens/org-tokens.html#admin-org-tokens) of your organization
 * arn of extension (you can find them in [the versions file](https://github.com/signalfx/lambda-layer-versions/blob/master/lambda-extension/lambda-extension-versions.md)) - make sure this is for the region where you intend to create the functions
 
 ```shell
