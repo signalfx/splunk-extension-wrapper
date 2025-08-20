@@ -9,4 +9,4 @@ minimal overhead.
 
 For official documentation on the metrics collected by the Splunk OpenTelemetry Lambda Layer 
 and how to configure ingest modes,
-see [AWS Lambda metrics and dimensions for Splunk Observability Cloud](https://quickdraw.splunk.com/redirect/?product=Observability&version=current&location=aws.lambda.metrics).
+see [AWS Lambda metrics and dimensions for Splunk Observability Cloud](https://help.splunk.com/en/splunk-observability-cloud/manage-data/instrument-serverless-functions/instrument-serverless-functions/instrument-aws-lambda-functions/metrics-and-dimensions).
