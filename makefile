@@ -38,7 +38,7 @@ build:
 
 .PHONY: package
 package:
-	cd $(BIN_DIR); zip -r $(EXTENSION_ZIP) $(shell realpath --relative-to $(BIN_DIR) $(EXTENSIONS_DIR))/*
+	cd $(BIN_DIR); zip -r extension.zip extensions/
 
 .PHONY: license-check
 license-check:

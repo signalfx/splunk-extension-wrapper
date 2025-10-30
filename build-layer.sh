@@ -28,11 +28,21 @@ done
 # run local tests
 echo "Running local tests"
 
-mkdir ~/testresults
-(cd /tmp || exit; GO111MODULE=on go get gotest.tools/gotestsum)
+mkdir -p ~/testresults
+go install gotest.tools/gotestsum@latest
+
+# Ensure Go bin directory is in PATH
+export PATH="$PATH:$(go env GOPATH)/bin"
+
 CGO_ENABLED=0 gotestsum --format short-verbose --junitfile ~/testresults/unit.xml --raw-command -- go test --json -p 4 ./...
 
 # package the layer
 echo "Packaging the layer"
-apt update && apt install --assume-yes zip
+# Install zip if needed (apt for Linux, brew for macOS)
+if command -v apt &> /dev/null; then
+    apt update && apt install --assume-yes zip
+elif command -v brew &> /dev/null; then
+    # zip is typically pre-installed on macOS, but install if missing
+    command -v zip &> /dev/null || brew install zip
+fi
 make
