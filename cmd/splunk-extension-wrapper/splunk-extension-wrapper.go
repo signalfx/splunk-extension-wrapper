@@ -19,8 +19,11 @@ import (
 	"github.com/splunk/lambda-extension/internal/extensionapi"
 	"github.com/splunk/lambda-extension/internal/metrics"
 	"github.com/splunk/lambda-extension/internal/ossignal"
+	"github.com/splunk/lambda-extension/internal/otelmetrics"
 	"github.com/splunk/lambda-extension/internal/shutdown"
+	"github.com/splunk/lambda-extension/internal/telemetry"
 	"bufio"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -28,6 +31,7 @@ import (
 	"path"
 	"runtime"
 	"strings"
+	"time"
 )
 
 // the correct value is set by the go linker (it's done during build using "ldflags")
@@ -35,14 +39,22 @@ var gitVersion string
 
 const enabledKey = "SPLUNK_EXTENSION_WRAPPER_ENABLED"
 const extensionNameKey = "SPLUNK_EXTENSION_WRAPPER_NAME"
+const otelEnabledKey = "USE_OTEL_METRICS"
 
 func enabled() bool {
 	s := strings.ToLower(os.Getenv(enabledKey))
 	return s != "0" && s != "false"
 }
 
+func otelEnabled() bool {
+	s := strings.ToLower(os.Getenv(otelEnabledKey))
+	return s == "1" || s == "true"
+}
+
 func main() {
+	ctx := context.Background()
 	enabled := enabled()
+	useOtel := otelEnabled()
 
 	configuration := config.New()
 
@@ -50,16 +62,35 @@ func main() {
 
 	ossignal.Watch()
 
-	// When we are running "disabled", don't actually try to emit metrics.
-	// A cleaner design for this would use an interface with a stub implementation,
-	// but 3 or 4 nil checks will do for now, since they're all in one file
+	// Initialize SignalFx metrics (legacy)
 	var m *metrics.MetricEmitter = nil
-	if enabled {
+	if enabled && !useOtel {
 		m = metrics.New()
+		// Log to stderr so it always appears in CloudWatch
+		fmt.Fprintln(os.Stderr, "[splunk-extension-wrapper] SignalFx metrics enabled")
 	}
 
-	shutdownCondition := registerApiAndStartMainLoop(enabled, m, &configuration)
+	// Initialize OpenTelemetry metrics
+	var otelProvider *otelmetrics.Provider = nil
+	var telemetrySub *telemetry.TelemetrySubscriber = nil
+	if enabled && useOtel {
+		var err error
+		otelProvider, err = otelmetrics.Setup(ctx)
+		if err != nil {
+			// Log to stderr so it always appears in CloudWatch
+			fmt.Fprintf(os.Stderr, "[splunk-extension-wrapper] Failed to initialize OpenTelemetry: %v\n", err)
+			fmt.Fprintln(os.Stderr, "[splunk-extension-wrapper] Falling back to SignalFx metrics")
+			m = metrics.New()
+			useOtel = false
+		} else {
+			// Log to stderr so it always appears in CloudWatch
+			fmt.Fprintln(os.Stderr, "[splunk-extension-wrapper] OpenTelemetry metrics enabled")
+		}
+	}
 
+	shutdownCondition := registerApiAndStartMainLoop(enabled, useOtel, m, otelProvider, &telemetrySub, &configuration)
+
+	// Shutdown metrics systems
 	if shutdownCondition.IsError() {
 		log.SetOutput(os.Stderr)
 	}
@@ -67,12 +98,31 @@ func main() {
 	log.Println("shutdown reason:", shutdownCondition.Reason())
 	log.Println("shutdown message:", shutdownCondition.Message())
 
+	// Shutdown telemetry subscriber first
+	if telemetrySub != nil {
+		shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+		if err := telemetrySub.Shutdown(shutdownCtx); err != nil {
+			log.Printf("Error shutting down telemetry subscriber: %v", err)
+		}
+	}
+
+	// Shutdown OpenTelemetry provider
+	if otelProvider != nil {
+		shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+		if err := otelProvider.Shutdown(shutdownCtx); err != nil {
+			log.Printf("Error shutting down OpenTelemetry: %v", err)
+		}
+	}
+
+	// Shutdown SignalFx metrics
 	if m != nil {
 		m.Shutdown(shutdownCondition)
 	}
 }
 
-func registerApiAndStartMainLoop(enabled bool, m *metrics.MetricEmitter, configuration *config.Configuration) (sc shutdown.Condition) {
+func registerApiAndStartMainLoop(enabled bool, useOtel bool, m *metrics.MetricEmitter, otelProvider *otelmetrics.Provider, telemetrySub **telemetry.TelemetrySubscriber, configuration *config.Configuration) (sc shutdown.Condition) {
 	var api *extensionapi.RegisteredApi
 
 	defer func() {
@@ -86,6 +136,33 @@ func registerApiAndStartMainLoop(enabled bool, m *metrics.MetricEmitter, configu
 	}()
 
 	api, sc = extensionapi.Register(enabled, extensionName(), configuration)
+
+	// Initialize Telemetry API subscriber after registration (need ExtensionID)
+	if sc == nil && useOtel && otelProvider != nil {
+		ctx := context.Background()
+		
+		// Create meter and metrics sink
+		meter := otelProvider.MeterProvider().Meter("github.com/splunk/lambda-extension")
+		metricsSink, err := otelmetrics.NewMetricsSink(meter)
+		if err != nil {
+			log.Printf("Failed to create metrics sink: %v", err)
+		} else {
+			// Create and start telemetry subscriber
+			*telemetrySub = telemetry.NewTelemetrySubscriber(telemetry.Config{
+				ExtensionID: api.ExtensionID(),
+				MetricsSink: metricsSink,
+			})
+			
+			if err := (*telemetrySub).Start(ctx); err != nil {
+				// Log to stderr so it always appears in CloudWatch
+				fmt.Fprintf(os.Stderr, "[splunk-extension-wrapper] Failed to start telemetry subscriber: %v\n", err)
+				*telemetrySub = nil
+			} else {
+				// Log to stderr so it always appears in CloudWatch
+				fmt.Fprintln(os.Stderr, "[splunk-extension-wrapper] Telemetry API subscriber started successfully")
+			}
+		}
+	}
 
 	if sc == nil {
 		sc = mainLoop(api, m, configuration)

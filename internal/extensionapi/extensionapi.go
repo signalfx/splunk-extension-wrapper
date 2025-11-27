@@ -53,6 +53,11 @@ type RegisteredApi struct {
 	registerResponse
 }
 
+// ExtensionID returns the extension ID assigned by AWS Lambda
+func (api *RegisteredApi) ExtensionID() string {
+	return api.extensionId
+}
+
 func Register(enabled bool, name string, configuration *config.Configuration) (*RegisteredApi, shutdown.Condition) {
 	log.Println("Registering... " + name)
         // extensions have to at least call Register and Next; they can't actually be "disabled"
