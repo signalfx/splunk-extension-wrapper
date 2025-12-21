@@ -4,7 +4,7 @@ go 1.23.6
 
 require (
 	github.com/aws/aws-sdk-go v1.55.8
-	github.com/signalfx/golib/v3 v3.4.1
+	github.com/signalfx/golib/v3 v3.4.2
 )
 
 require (
